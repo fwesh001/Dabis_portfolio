@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design System & Global Shell Prototype | Olehi Davis</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono for pristine fallback matching Geist -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: 'var(--accent, #10B981)',
+            'accent-muted': 'var(--accent-muted, rgba(16, 185, 129, 0.15))',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --accent: #10B981;
+      --accent-muted: rgba(16, 185, 129, 0.15);
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #09090b; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+    .light ::-webkit-scrollbar-track { background: #f4f4f5; }
+    .light ::-webkit-scrollbar-thumb { background: #d4d4d8; }
+    .light ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+
+    /* Phone frame bezel */
+    .phone-bezel {
+      border: 12px solid #27272a;
+      border-radius: 44px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+    .phone-speaker {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 18px;
+      background: #09090b;
+      border-radius: 12px;
+      z-index: 40;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .phone-speaker::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      background: #18181b;
+      border-radius: 50%;
+      border: 2px solid #27272a;
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans antialiased overflow-hidden select-none">
+
+  <!-- ========================================================================= -->
+  <!-- UNIVERSAL PREVIEW BAR                                                     -->
+  <!-- ========================================================================= -->
+  <header class="h-14 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between z-50 flex-shrink-0 text-xs">
+    <!-- Left: Navigation between draft files -->
+    <div class="flex items-center space-x-1 sm:space-x-2">
+      <span class="font-mono text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mr-2 hidden md:inline">Drafts:</span>
+      <a href="00-design-system.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors bg-zinc-800 text-white border border-zinc-700 flex items-center gap-1.5 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
+        <span>00 Shell</span>
+      </a>
+      <a href="01-portfolio.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        01 Portfolio
+      </a>
+      <a href="02-blog.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        02 Blog
+      </a>
+      <a href="03-admin-cms.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        03 Admin
+      </a>
+    </div>
+
+    <!-- Center: Viewport Mode Switcher (Desktop 1440px vs Mobile 390px vs Fluid) -->
+    <div class="flex items-center bg-zinc-950/80 p-0.5 rounded-lg border border-zinc-800 shadow-inner">
+      <button id="btn-desktop" onclick="setViewportMode('desktop')" title="Desktop Viewport (1440px)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5">
+        <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">1440px</span>
+      </button>
+      <button id="btn-mobile" onclick="setViewportMode('mobile')" title="Mobile Viewport (390px - True iPhone Iframe)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5">
+        <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">390px</span>
+      </button>
+      <button id="btn-fluid" onclick="setViewportMode('fluid')" title="Full Browser Width (Responsive Fluid)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5">
+        <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Fluid</span>
+      </button>
+    </div>
+
+    <!-- Right: Theme & Accent Color Controls -->
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <!-- Accent Palette -->
+      <div class="flex items-center space-x-1.5 bg-zinc-950/80 px-2 py-1 rounded-lg border border-zinc-800">
+        <span class="text-[10px] font-mono text-zinc-500 mr-1 hidden lg:inline">ACCENT</span>
+        <button onclick="setAccent('#10B981')" title="Emerald (#10B981)" class="w-4 h-4 rounded-full bg-[#10B981] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch active-accent" data-color="#10B981"></button>
+        <button onclick="setAccent('#3B82F6')" title="Electric Blue (#3B82F6)" class="w-4 h-4 rounded-full bg-[#3B82F6] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch" data-color="#3B82F6"></button>
+        <button onclick="setAccent('#F59E0B')" title="Amber (#F59E0B)" class="w-4 h-4 rounded-full bg-[#F59E0B] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch" data-color="#F59E0B"></button>
+        <input type="color" id="custom-accent" value="#10B981" onchange="setAccent(this.value)" title="Custom Accent" class="w-4 h-4 rounded-full opacity-0 absolute pointer-events-none">
+        <button onclick="document.getElementById('custom-accent').click()" title="Pick Custom Color" class="w-4 h-4 rounded-full border border-dashed border-zinc-500 flex items-center justify-center text-[9px] text-zinc-400 hover:text-zinc-200">
+          +
+        </button>
+      </div>
+
+      <!-- Theme Switcher (Dark / Light) -->
+      <button id="theme-toggle-btn" onclick="toggleTheme()" class="px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950/80 hover:bg-zinc-800 text-zinc-300 transition-colors flex items-center gap-1.5 font-mono text-[11px]" title="Toggle Dark/Light Mode">
+        <i data-lucide="moon" class="w-3.5 h-3.5" id="theme-icon"></i>
+        <span id="theme-text" class="hidden sm:inline">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- VIEWPORT STAGE CANVAS                                                     -->
+  <!-- ========================================================================= -->
+  <main id="viewport-stage" class="flex-1 bg-zinc-950 bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:16px_16px] flex items-center justify-center p-2 sm:p-6 overflow-hidden">
+    <!-- Desktop Top Window Header Bar (Simulated Browser Tab) -->
+    <div id="frame-container" class="w-full h-full max-w-[1440px] flex flex-col transition-all duration-300 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/60 shadow-2xl">
+      <!-- Browser faux header -->
+      <div id="desktop-chrome" class="h-9 bg-zinc-900 border-b border-zinc-800 px-3 flex items-center justify-between text-xs text-zinc-400 select-none flex-shrink-0">
+        <div class="flex items-center space-x-2">
+          <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+          <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+          <span class="ml-2 font-mono text-[11px] text-zinc-400">Olehi Davis — Design System & Global Shell</span>
+        </div>
+        <div class="bg-zinc-950/70 border border-zinc-800 rounded-md px-3 py-0.5 text-[11px] font-mono text-zinc-400 flex items-center gap-1.5 w-72 justify-center">
+          <i data-lucide="lock" class="w-2.5 h-2.5 text-[var(--accent)]"></i>
+          <span>design-system.local/shell</span>
+        </div>
+        <div class="flex items-center space-x-2 text-[11px] font-mono text-zinc-500">
+          <span id="viewport-indicator">1440 x 900</span>
+        </div>
+      </div>
+
+      <!-- Phone notch/speaker (only shown in mobile mode) -->
+      <div id="mobile-notch" class="phone-speaker hidden"></div>
+
+      <!-- Real <iframe> for strict media-query isolation -->
+      <iframe id="preview-iframe" class="w-full flex-1 bg-zinc-950 border-0" src="about:blank"></iframe>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- INNER HTML SOURCE FOR 00-DESIGN-SYSTEM                                    -->
+  <!-- ========================================================================= -->
+  <script id="inner-html-template" type="text/template">
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design System & Global Shell</title>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"><\/script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: 'var(--accent, #10B981)',
+            'accent-muted': 'var(--accent-muted, rgba(16, 185, 129, 0.15))',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  <\/script>
+  <style>
+    :root {
+      --accent: #10B981;
+      --accent-muted: rgba(16, 185, 129, 0.15);
+    }
+    html.dark {
+      background-color: #09090b;
+      color: #fafafa;
+    }
+    html:not(.dark) {
+      background-color: #fafafa;
+      color: #09090b;
+    }
+    /* Custom Cursor */
+    .cursor-dot {
+      pointer-events: none;
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.15s ease;
+    }
+    .cursor-ring {
+      pointer-events: none;
+      position: fixed;
+      width: 28px;
+      height: 28px;
+      border: 1.5px solid var(--accent);
+      border-radius: 50%;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1), height 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease;
+    }
+    .cursor-hover .cursor-ring {
+      width: 44px;
+      height: 44px;
+      background-color: var(--accent-muted);
+      border-color: var(--accent);
+    }
+    @media (pointer: coarse) {
+      .cursor-dot, .cursor-ring { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-emerald-500/20 selection:text-emerald-300 pb-24">
+
+  <!-- Custom Cursor Elements -->
+  <div id="cursor-dot" class="cursor-dot"></div>
+  <div id="cursor-ring" class="cursor-ring"></div>
+
+  <!-- ========================================================================= -->
+  <!-- 1. STICKY MINIMAL NAVBAR (Glassmorphism & Monogram)                       -->
+  <!-- ========================================================================= -->
+  <nav class="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-zinc-950/75 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <!-- Monogram Logo -->
+      <a href="#top" class="flex items-center space-x-3 group cursor-pointer">
+        <div class="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-700/80 flex items-center justify-center font-mono font-bold text-sm tracking-tight text-white group-hover:border-[var(--accent)] group-hover:text-[var(--accent)] transition-all shadow-sm">
+          OD
+        </div>
+        <div class="flex flex-col">
+          <span class="font-medium text-sm text-zinc-100 group-hover:text-white transition-colors">Olehi Davis</span>
+          <span class="text-[11px] font-mono text-zinc-500">Senior Software Engineer</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Items -->
+      <div class="hidden md:flex items-center space-x-6 text-sm text-zinc-400 font-medium">
+        <a href="#tokens" class="hover:text-white transition-colors">01 Tokens</a>
+        <a href="#shell" class="hover:text-white transition-colors">02 Shell Components</a>
+        <a href="#components" class="hover:text-white transition-colors">03 UI Components</a>
+        <a href="#feedback" class="hover:text-white transition-colors">04 Interactive Toasts</a>
+      </div>
+
+      <!-- Right Actions: Command Palette Badge & Theme Indicator -->
+      <div class="flex items-center space-x-3">
+        <!-- Command Palette Trigger Button -->
+        <button onclick="toggleCommandPalette(true)" class="hidden sm:flex items-center space-x-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all">
+          <i data-lucide="search" class="w-3.5 h-3.5"></i>
+          <span>Search...</span>
+          <kbd class="bg-zinc-800 px-1.5 py-0.5 rounded text-[10px] text-zinc-400 border border-zinc-700">⌘K</kbd>
+        </button>
+
+        <!-- Availability Status Pill in Nav -->
+        <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-zinc-900/90 border border-zinc-800 text-[11px] font-mono text-zinc-300">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background-color: var(--accent);"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2" style="background-color: var(--accent);"></span>
+          </span>
+          <span class="hidden sm:inline">Available for Roles</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN CONTENT CONTAINER                                                    -->
+  <!-- ========================================================================= -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-10 space-y-16">
+
+    <!-- Header Section -->
+    <div class="space-y-4 border-b border-zinc-800/80 pb-8">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-mono text-[var(--accent)]">
+        <span>00 // DESIGN SYSTEM &amp; GLOBAL SHELL SPECIFICATION</span>
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-white">Precision Technical Minimalism</h1>
+      <p class="text-base sm:text-lg text-zinc-400 max-w-3xl leading-relaxed">
+        Engineered for senior-level technical depth. 95% monochrome high-contrast Zinc scale, 5% dynamic accent token (<code class="font-mono text-[var(--accent)]">--accent</code>), Geist typography hierarchy, selective glassmorphism, and responsive interaction layers.
+      </p>
+      <div class="flex flex-wrap items-center gap-3 pt-2 text-xs font-mono text-zinc-400">
+        <span class="flex items-center gap-1.5 bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800">
+          <i data-lucide="check" class="w-3.5 h-3.5 text-[var(--accent)]"></i> Dual Theme (Dark/Light)
+        </span>
+        <span class="flex items-center gap-1.5 bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800">
+          <i data-lucide="check" class="w-3.5 h-3.5 text-[var(--accent)]"></i> 390px Mobile &amp; 1440px Desktop
+        </span>
+        <span class="flex items-center gap-1.5 bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800">
+          <i data-lucide="check" class="w-3.5 h-3.5 text-[var(--accent)]"></i> Custom Cursor &amp; Context Menu
+        </span>
+      </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- 1. COLOR TOKENS & TYPOGRAPHY                                            -->
+    <!-- ======================================================================= -->
+    <section id="tokens" class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold font-mono tracking-tight text-white flex items-center gap-2">
+          <span class="text-[var(--accent)]">01 //</span> Color Architecture &amp; Tokens
+        </h2>
+        <span class="text-xs font-mono text-zinc-500">Zinc Scale + Dynamic Accent</span>
+      </div>
+
+      <!-- Color Swatches Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <!-- Dark Background -->
+        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+          <div class="h-16 rounded-lg bg-[#09090B] border border-zinc-800 flex items-center justify-center font-mono text-[10px] text-zinc-500">
+            #09090B
+          </div>
+          <div>
+            <div class="text-xs font-semibold text-zinc-200">Dark Surface</div>
+            <div class="text-[10px] font-mono text-zinc-500">zinc-950</div>
+          </div>
+        </div>
+
+        <!-- Elevated Card -->
+        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+          <div class="h-16 rounded-lg bg-[#121215] border border-zinc-800 flex items-center justify-center font-mono text-[10px] text-zinc-400">
+            #121215
+          </div>
+          <div>
+            <div class="text-xs font-semibold text-zinc-200">Elevated Card</div>
+            <div class="text-[10px] font-mono text-zinc-500">zinc-900+</div>
+          </div>
+        </div>
+
+        <!-- Hover Surface -->
+        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+          <div class="h-16 rounded-lg bg-[#18181B] border border-zinc-700/60 flex items-center justify-center font-mono text-[10px] text-zinc-300">
+            #18181B
+          </div>
+          <div>
+            <div class="text-xs font-semibold text-zinc-200">Hover Surface</div>
+            <div class="text-[10px] font-mono text-zinc-500">zinc-900</div>
+          </div>
+        </div>
+
+        <!-- Border Scale -->
+        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+          <div class="h-16 rounded-lg bg-[#27272A] border border-zinc-700 flex items-center justify-center font-mono text-[10px] text-zinc-200">
+            #27272A
+          </div>
+          <div>
+            <div class="text-xs font-semibold text-zinc-200">Subtle Border</div>
+            <div class="text-[10px] font-mono text-zinc-500">zinc-800</div>
+          </div>
+        </div>
+
+        <!-- Light Surface -->
+        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+          <div class="h-16 rounded-lg bg-[#FAFAFA] border border-zinc-300 flex items-center justify-center font-mono text-[10px] text-zinc-900 font-bold">
+            #FAFAFA
+          </div>
+          <div>
+            <div class="text-xs font-semibold text-zinc-200">Light Surface</div>
+            <div class="text-[10px] font-mono text-zinc-500">zinc-50</div>
+          </div>
+        </div>
+
+        <!-- Dynamic Accent -->
+        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+          <div class="h-16 rounded-lg flex items-center justify-center font-mono text-xs font-bold text-black shadow-lg" style="background-color: var(--accent);">
+            DYNAMIC
+          </div>
+          <div>
+            <div class="text-xs font-semibold text-[var(--accent)]">--accent</div>
+            <div class="text-[10px] font-mono text-zinc-400">5% brand focal</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typography Showcase -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+        <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800 space-y-3">
+          <span class="text-xs font-mono text-zinc-500 uppercase tracking-wider">Geist Sans (Headings &amp; Body)</span>
+          <div class="space-y-1">
+            <div class="text-2xl font-bold tracking-tight text-white">Distributed Systems Architect</div>
+            <div class="text-base text-zinc-300">Designing fault-tolerant, high-concurrency microservices and data pipelines.</div>
+            <div class="text-xs text-zinc-500">Precision tracking at -0.02em for headings, standard line-height 1.6 for readability.</div>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800 space-y-3 font-mono">
+          <span class="text-xs font-mono text-zinc-500 uppercase tracking-wider">Geist Mono (Metadata, Code &amp; Tags)</span>
+          <div class="space-y-2 text-xs">
+            <div class="text-[var(--accent)]">01 // PROJECTS &mdash; 2024.11.14</div>
+            <div class="text-zinc-300">p99_latency: 14.2ms | throughput: 42,000 req/s</div>
+            <div class="bg-zinc-950 p-2.5 rounded border border-zinc-800 text-zinc-400 text-[11px]">
+              const id = crypto.randomUUID();<br>
+              await redis.setex(`idemp:${id}`, 86400, 'processing');
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- 2. GLOBAL SHELL MICRO-INTERACTIONS                                      -->
+    <!-- ======================================================================= -->
+    <section id="shell" class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold font-mono tracking-tight text-white flex items-center gap-2">
+          <span class="text-[var(--accent)]">02 //</span> Global Shell Interactions
+        </h2>
+        <span class="text-xs font-mono text-zinc-500">Cursor • Context Menu • Command Palette</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Interactive 1: Custom Cursor Test Pad -->
+        <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-zinc-400 flex items-center gap-1.5">
+                <i data-lucide="mouse-pointer" class="w-3.5 h-3.5 text-[var(--accent)]"></i> Spring Cursor
+              </span>
+              <span class="text-[10px] font-mono text-zinc-500">Desktop Only</span>
+            </div>
+            <p class="text-xs text-zinc-400">
+              Outer ring (28px) with inner dot (6px) driven by spring physics. Automatically scales on hover and hides on touch screens.
+            </p>
+          </div>
+          <div class="p-6 rounded-lg bg-zinc-950 border border-dashed border-zinc-800 flex flex-col items-center justify-center space-y-3 text-center">
+            <span class="text-xs text-zinc-500">Hover over elements below:</span>
+            <div class="flex gap-2">
+              <button class="px-3 py-1.5 rounded-md bg-zinc-800 text-xs text-zinc-200 hover:bg-zinc-700 transition-colors">Hover Link</button>
+              <button class="px-3 py-1.5 rounded-md text-xs font-semibold text-black transition-transform hover:scale-105" style="background-color: var(--accent);">Hover Accent</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive 2: Right-Click Context Menu -->
+        <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-zinc-400 flex items-center gap-1.5">
+                <i data-lucide="menu" class="w-3.5 h-3.5 text-[var(--accent)]"></i> Context Menu
+              </span>
+              <span class="text-[10px] font-mono text-zinc-500">Right-Click Test</span>
+            </div>
+            <p class="text-xs text-zinc-400">
+              Custom keyboard-accessible context menu for quick actions. Hold <kbd class="px-1 py-0.5 bg-zinc-800 rounded text-[10px] border border-zinc-700">Shift</kbd> to access the native browser menu.
+            </p>
+          </div>
+          <div id="context-test-area" class="p-6 rounded-lg bg-zinc-950 border border-zinc-800 flex flex-col items-center justify-center text-center cursor-context-menu hover:border-zinc-700 transition-colors">
+            <i data-lucide="mouse" class="w-6 h-6 text-zinc-500 mb-2"></i>
+            <span class="text-xs font-medium text-zinc-300">Right-Click Anywhere Here</span>
+            <span class="text-[10px] text-zinc-500 mt-1">or test anywhere on the page</span>
+          </div>
+        </div>
+
+        <!-- Interactive 3: Command Palette Trigger -->
+        <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-zinc-400 flex items-center gap-1.5">
+                <i data-lucide="command" class="w-3.5 h-3.5 text-[var(--accent)]"></i> Command Palette
+              </span>
+              <span class="text-[10px] font-mono text-zinc-500">⌘K / Ctrl+K</span>
+            </div>
+            <p class="text-xs text-zinc-400">
+              Fast fuzzy search for projects, blog posts, section navigation, theme toggling, and resume download.
+            </p>
+          </div>
+          <button onclick="toggleCommandPalette(true)" class="w-full py-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 text-xs font-mono flex items-center justify-center gap-2 transition-all group">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-[var(--accent)] group-hover:scale-110 transition-transform"></i>
+            <span>Open Command Palette</span>
+            <kbd class="bg-zinc-800 px-1.5 py-0.5 rounded text-[10px] text-zinc-400 border border-zinc-700 ml-1">⌘K</kbd>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- 3. COMPONENT SHOWCASE                                                   -->
+    <!-- ======================================================================= -->
+    <section id="components" class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold font-mono tracking-tight text-white flex items-center gap-2">
+          <span class="text-[var(--accent)]">03 //</span> Production UI Components
+        </h2>
+        <span class="text-xs font-mono text-zinc-500">Buttons • Badges • Inputs</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Buttons & Actions -->
+        <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800 space-y-4">
+          <span class="text-xs font-mono text-zinc-400 uppercase tracking-wider block">Button Hierarchy</span>
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Primary Accent Button -->
+            <button class="px-4 py-2 rounded-lg text-xs font-semibold text-black flex items-center gap-1.5 transition-transform active:scale-95 shadow-md" style="background-color: var(--accent);">
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Primary Action
+            </button>
+            <!-- Secondary Zinc Button -->
+            <button class="px-4 py-2 rounded-lg text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-700/80 flex items-center gap-1.5 transition-colors">
+              <i data-lucide="file-text" class="w-3.5 h-3.5 text-zinc-400"></i> View Resume
+            </button>
+            <!-- Ghost Button -->
+            <button class="px-3 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors">
+              Ghost Button
+            </button>
+            <!-- Destructive Button -->
+            <button class="px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-red-950/40 border border-red-900/40 transition-colors">
+              Delete Record
+            </button>
+          </div>
+        </div>
+
+        <!-- Badges & Status Pills -->
+        <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800 space-y-4">
+          <span class="text-xs font-mono text-zinc-400 uppercase tracking-wider block">Badges &amp; Status Indicators</span>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <!-- Live Status Pill -->
+            <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-200">
+              <span class="w-2 h-2 rounded-full" style="background-color: var(--accent);"></span>
+              <span>Available for Consulting</span>
+            </span>
+            <!-- Tech Stack Pill -->
+            <span class="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-400 hover:border-zinc-700 transition-colors">
+              Go / Golang
+            </span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-400 hover:border-zinc-700 transition-colors">
+              PostgreSQL
+            </span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/30">
+              Featured Case Study
+            </span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono text-zinc-500 bg-zinc-950 border border-zinc-800">
+              v2.4.0
+            </span>
+          </div>
+        </div>
+
+        <!-- Form Controls -->
+        <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800 space-y-4 md:col-span-2">
+          <span class="text-xs font-mono text-zinc-400 uppercase tracking-wider block">Input Controls &amp; Form Fields</span>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Search Input -->
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-mono text-zinc-400">Search Query</label>
+              <div class="relative">
+                <i data-lucide="search" class="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                <input type="text" placeholder="Filter articles or projects..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[var(--accent)] transition-colors">
+              </div>
+            </div>
+
+            <!-- Select Dropdown -->
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-mono text-zinc-400">Domain Category</label>
+              <select class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[var(--accent)] transition-colors">
+                <option>Distributed Systems</option>
+                <option>Cloud Infrastructure</option>
+                <option>Database Optimization</option>
+                <option>Developer Tooling</option>
+              </select>
+            </div>
+
+            <!-- Toggle Switch -->
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-mono text-zinc-400">Availability Switch</label>
+              <div class="flex items-center space-x-3 pt-1.5">
+                <button id="demo-toggle" onclick="toggleDemoSwitch()" class="w-11 h-6 bg-[var(--accent)] rounded-full relative transition-colors p-0.5 flex items-center">
+                  <div id="demo-toggle-knob" class="w-5 h-5 bg-black rounded-full transition-transform translate-x-5 shadow"></div>
+                </button>
+                <span id="demo-toggle-label" class="text-xs font-mono text-zinc-300">Open to Roles</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- 4. INTERACTIVE TOASTS & FEEDBACK                                        -->
+    <!-- ======================================================================= -->
+    <section id="feedback" class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold font-mono tracking-tight text-white flex items-center gap-2">
+          <span class="text-[var(--accent)]">04 //</span> Feedback &amp; Notification States
+        </h2>
+        <span class="text-xs font-mono text-zinc-500">Toast Notifications</span>
+      </div>
+
+      <div class="p-6 rounded-xl bg-zinc-900/40 border border-zinc-800 space-y-4">
+        <p class="text-xs text-zinc-400 max-w-xl">
+          Non-blocking toast feedback triggered by user interactions (copy email, download resume, save post draft, clipboard actions).
+        </p>
+        <div class="flex flex-wrap items-center gap-3">
+          <button onclick="showToast('Email address copied to clipboard!', 'success')" class="px-3.5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-xs font-mono text-emerald-400 flex items-center gap-2 transition-colors">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Trigger Success Toast
+          </button>
+          <button onclick="showToast('Resume PDF downloaded (Olehi_Davis_CV.pdf)', 'info')" class="px-3.5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-xs font-mono text-blue-400 flex items-center gap-2 transition-colors">
+            <i data-lucide="info" class="w-3.5 h-3.5"></i> Trigger Info Toast
+          </button>
+          <button onclick="showToast('Session warning: Re-authenticating in 5 minutes', 'warning')" class="px-3.5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-xs font-mono text-amber-400 flex items-center gap-2 transition-colors">
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Trigger Warning Toast
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- COMMAND PALETTE MODAL                                                     -->
+  <!-- ========================================================================= -->
+  <div id="cmd-palette-backdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-start justify-center pt-20 px-4 transition-opacity">
+    <div class="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden flex flex-col font-sans">
+      <!-- Search input header -->
+      <div class="flex items-center px-4 border-b border-zinc-800 h-12">
+        <i data-lucide="search" class="w-4 h-4 text-zinc-400 mr-2.5"></i>
+        <input id="cmd-input" type="text" placeholder="Type a command or search sections..." class="w-full bg-transparent text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none" oninput="filterCommandPalette(this.value)">
+        <kbd class="text-[10px] font-mono text-zinc-500 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">ESC</kbd>
+      </div>
+
+      <!-- Command list -->
+      <div id="cmd-list" class="max-h-80 overflow-y-auto p-2 space-y-1 text-xs font-medium">
+        <div class="text-[10px] font-mono text-zinc-500 px-2 py-1 uppercase tracking-wider">Navigation</div>
+        <div onclick="cmdNavigate('#tokens')" class="cmd-item px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-900 cursor-pointer flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="palette" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+            <span>01 // Color Tokens &amp; Typography</span>
+          </div>
+          <span class="text-[10px] font-mono text-zinc-500">Jump</span>
+        </div>
+        <div onclick="cmdNavigate('#shell')" class="cmd-item px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-900 cursor-pointer flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="layout" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+            <span>02 // Global Shell Components</span>
+          </div>
+          <span class="text-[10px] font-mono text-zinc-500">Jump</span>
+        </div>
+        <div onclick="cmdNavigate('#components')" class="cmd-item px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-900 cursor-pointer flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="box" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+            <span>03 // UI Component Showcase</span>
+          </div>
+          <span class="text-[10px] font-mono text-zinc-500">Jump</span>
+        </div>
+
+        <div class="text-[10px] font-mono text-zinc-500 px-2 py-1 uppercase tracking-wider pt-2">Quick Actions</div>
+        <div onclick="showToast('Email address copied to clipboard!', 'success'); toggleCommandPalette(false);" class="cmd-item px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-900 cursor-pointer flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="mail" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Copy Senior Engineer Contact Email</span>
+          </div>
+          <span class="text-[10px] font-mono text-zinc-500">Action</span>
+        </div>
+        <div onclick="showToast('Resume downloaded', 'info'); toggleCommandPalette(false);" class="cmd-item px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-900 cursor-pointer flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="download" class="w-3.5 h-3.5 text-blue-400"></i>
+            <span>Download Olehi Davis Resume (PDF)</span>
+          </div>
+          <span class="text-[10px] font-mono text-zinc-500">PDF</span>
+        </div>
+        <div onclick="window.open('https://github.com/18d-shady', '_blank'); toggleCommandPalette(false);" class="cmd-item px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-900 cursor-pointer flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="github" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <span>Open GitHub Profile (18d-shady)</span>
+          </div>
+          <span class="text-[10px] font-mono text-zinc-500">External</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- CUSTOM RIGHT-CLICK CONTEXT MENU                                           -->
+  <!-- ========================================================================= -->
+  <div id="custom-context-menu" class="fixed z-50 w-52 bg-zinc-950/95 backdrop-blur-md border border-zinc-800 rounded-xl shadow-2xl p-1.5 text-xs text-zinc-300 hidden font-sans">
+    <div onclick="showToast('Email copied to clipboard!', 'success'); hideContextMenu();" class="px-2.5 py-1.5 rounded-lg hover:bg-zinc-800/80 hover:text-white cursor-pointer flex items-center gap-2">
+      <i data-lucide="copy" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+      <span>Copy Email Address</span>
+    </div>
+    <div onclick="showToast('Page URL copied!', 'info'); hideContextMenu();" class="px-2.5 py-1.5 rounded-lg hover:bg-zinc-800/80 hover:text-white cursor-pointer flex items-center gap-2">
+      <i data-lucide="link" class="w-3.5 h-3.5 text-zinc-400"></i>
+      <span>Copy Page URL</span>
+    </div>
+    <div class="my-1 border-t border-zinc-800/80"></div>
+    <div onclick="toggleCommandPalette(true); hideContextMenu();" class="px-2.5 py-1.5 rounded-lg hover:bg-zinc-800/80 hover:text-white cursor-pointer flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i data-lucide="command" class="w-3.5 h-3.5 text-zinc-400"></i>
+        <span>Command Palette</span>
+      </div>
+      <kbd class="text-[9px] font-mono text-zinc-500">⌘K</kbd>
+    </div>
+    <div onclick="window.parent.toggleTheme(); hideContextMenu();" class="px-2.5 py-1.5 rounded-lg hover:bg-zinc-800/80 hover:text-white cursor-pointer flex items-center gap-2">
+      <i data-lucide="sun-moon" class="w-3.5 h-3.5 text-zinc-400"></i>
+      <span>Toggle Theme</span>
+    </div>
+    <div class="my-1 border-t border-zinc-800/80"></div>
+    <div class="px-2 py-1 text-[10px] font-mono text-zinc-500">
+      Shift + Right-Click for native
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TOAST NOTIFICATION CONTAINER                                              -->
+  <!-- ========================================================================= -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Scripts for inner page -->
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Custom Spring Cursor tracking
+    const dot = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+    let mouseX = -100, mouseY = -100;
+    let ringX = -100, ringY = -100;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      dot.style.left = `${mouseX}px`;
+      dot.style.top = `${mouseY}px`;
+    });
+
+    function animateCursor() {
+      ringX += (mouseX - ringX) * 0.18;
+      ringY += (mouseY - ringY) * 0.18;
+      ring.style.left = `${ringX}px`;
+      ring.style.top = `${ringY}px`;
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    // Hover effect for interactive items
+    document.querySelectorAll('a, button, input, select, .cursor-pointer').forEach(el => {
+      el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+    });
+
+    // Custom Right Click Context Menu
+    const contextMenu = document.getElementById('custom-context-menu');
+    window.addEventListener('contextmenu', (e) => {
+      if (e.shiftKey) return; // Escape hatch
+      e.preventDefault();
+      contextMenu.style.left = `${Math.min(e.clientX, window.innerWidth - 220)}px`;
+      contextMenu.style.top = `${Math.min(e.clientY, window.innerHeight - 200)}px`;
+      contextMenu.classList.remove('hidden');
+    });
+
+    window.addEventListener('click', () => hideContextMenu());
+    function hideContextMenu() {
+      contextMenu.classList.add('hidden');
+    }
+
+    // Command Palette Modal
+    const cmdPalette = document.getElementById('cmd-palette-backdrop');
+    const cmdInput = document.getElementById('cmd-input');
+
+    function toggleCommandPalette(open) {
+      if (open) {
+        cmdPalette.classList.remove('hidden');
+        cmdInput.value = '';
+        setTimeout(() => cmdInput.focus(), 50);
+      } else {
+        cmdPalette.classList.add('hidden');
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        toggleCommandPalette(cmdPalette.classList.contains('hidden'));
+      }
+      if (e.key === 'Escape') {
+        toggleCommandPalette(false);
+        hideContextMenu();
+      }
+    });
+
+    cmdPalette.addEventListener('click', (e) => {
+      if (e.target === cmdPalette) toggleCommandPalette(false);
+    });
+
+    function cmdNavigate(hash) {
+      toggleCommandPalette(false);
+      window.location.hash = hash;
+    }
+
+    function filterCommandPalette(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('#cmd-list .cmd-item').forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    // Demo availability toggle
+    let isAvailable = true;
+    function toggleDemoSwitch() {
+      isAvailable = !isAvailable;
+      const knob = document.getElementById('demo-toggle-knob');
+      const btn = document.getElementById('demo-toggle');
+      const label = document.getElementById('demo-toggle-label');
+      if (isAvailable) {
+        knob.style.transform = 'translateX(20px)';
+        btn.style.backgroundColor = 'var(--accent)';
+        label.textContent = 'Open to Roles';
+      } else {
+        knob.style.transform = 'translateX(0px)';
+        btn.style.backgroundColor = '#3f3f46';
+        label.textContent = 'Currently Busy';
+      }
+    }
+
+    // Toast function
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700/80 shadow-2xl text-xs text-zinc-100 font-sans transition-all duration-300 transform translate-y-4 opacity-0';
+      
+      let icon = 'check-circle-2';
+      let iconColor = 'text-[var(--accent)]';
+      if (type === 'info') { icon = 'info'; iconColor = 'text-blue-400'; }
+      if (type === 'warning') { icon = 'alert-triangle'; iconColor = 'text-amber-400'; }
+
+      toast.innerHTML = `
+        <i data-lucide="${icon}" class="w-4 h-4 ${iconColor} flex-shrink-0"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      lucide.createIcons({ root: toast });
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-4', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+  <\/script>
+</body>
+</html>
+  </script>
+
+  <!-- ========================================================================= -->
+  <!-- PREVIEW SHELL CONTROLLER                                                  -->
+  <!-- ========================================================================= -->
+  <script>
+    lucide.createIcons();
+
+    let currentMode = 'desktop';
+    let currentTheme = 'dark';
+    let currentAccent = '#10B981';
+
+    const iframe = document.getElementById('preview-iframe');
+    const container = document.getElementById('frame-container');
+    const notch = document.getElementById('mobile-notch');
+    const desktopChrome = document.getElementById('desktop-chrome');
+    const viewportIndicator = document.getElementById('viewport-indicator');
+
+    // Load template HTML into the iframe
+    function loadIframeContent() {
+      const template = document.getElementById('inner-html-template').innerHTML;
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(template);
+      doc.close();
+
+      // Apply initial theme & accent to iframe
+      setTimeout(() => {
+        applyThemeToIframe();
+        applyAccentToIframe();
+      }, 50);
+    }
+
+    // Viewport Mode Switcher
+    function setViewportMode(mode) {
+      currentMode = mode;
+      
+      // Update button styling
+      document.getElementById('btn-desktop').className = mode === 'desktop' 
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+      
+      document.getElementById('btn-mobile').className = mode === 'mobile'
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+
+      document.getElementById('btn-fluid').className = mode === 'fluid'
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+
+      if (mode === 'desktop') {
+        container.style.width = '1440px';
+        container.style.maxWidth = '100%';
+        container.style.height = '100%';
+        container.classList.remove('phone-bezel');
+        container.classList.add('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.remove('hidden');
+        notch.classList.add('hidden');
+        viewportIndicator.textContent = '1440 x 900';
+      } else if (mode === 'mobile') {
+        // Strict 390px iPhone viewport inside real iframe
+        container.style.width = '390px';
+        container.style.maxWidth = '390px';
+        container.style.height = '844px';
+        container.classList.add('phone-bezel');
+        container.classList.remove('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.add('hidden');
+        notch.classList.remove('hidden');
+        viewportIndicator.textContent = '390 x 844 (iPhone)';
+      } else if (mode === 'fluid') {
+        container.style.width = '100%';
+        container.style.maxWidth = '100%';
+        container.style.height = '100%';
+        container.classList.remove('phone-bezel');
+        container.classList.add('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.remove('hidden');
+        notch.classList.add('hidden');
+        viewportIndicator.textContent = `${window.innerWidth} x ${window.innerHeight}`;
+      }
+    }
+
+    // Theme Switcher
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      const root = document.documentElement;
+      const themeText = document.getElementById('theme-text');
+      const themeIcon = document.getElementById('theme-icon');
+
+      if (currentTheme === 'light') {
+        root.classList.remove('dark');
+        themeText.textContent = 'Light';
+        themeIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        root.classList.add('dark');
+        themeText.textContent = 'Dark';
+        themeIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+      applyThemeToIframe();
+    }
+
+    function applyThemeToIframe() {
+      try {
+        const idoc = iframe.contentDocument || iframe.contentWindow.document;
+        if (currentTheme === 'light') {
+          idoc.documentElement.classList.remove('dark');
+          idoc.documentElement.classList.add('light');
+        } else {
+          idoc.documentElement.classList.add('dark');
+          idoc.documentElement.classList.remove('light');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Accent Color Switcher
+    function setAccent(color) {
+      currentAccent = color;
+      document.documentElement.style.setProperty('--accent', color);
+      
+      // Update swatch active outline
+      document.querySelectorAll('.accent-swatch').forEach(btn => {
+        if (btn.getAttribute('data-color') === color) {
+          btn.classList.add('ring-white');
+        } else {
+          btn.classList.remove('ring-white');
+        }
+      });
+      applyAccentToIframe();
+    }
+
+    function applyAccentToIframe() {
+      try {
+        const idoc = iframe.contentDocument || iframe.contentWindow.document;
+        idoc.documentElement.style.setProperty('--accent', currentAccent);
+        idoc.documentElement.style.setProperty('--accent-muted', `${currentAccent}26`);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Initial run
+    loadIframeContent();
+    setViewportMode('desktop');
+    setAccent('#10B981');
+  </script>
+</body>
+</html>
