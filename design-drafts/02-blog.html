@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Blog &amp; Article Reader Prototype | Olehi Davis</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: 'var(--accent, #10B981)',
+            'accent-muted': 'var(--accent-muted, rgba(16, 185, 129, 0.15))',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --accent: #10B981;
+      --accent-muted: rgba(16, 185, 129, 0.15);
+    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #09090b; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+    /* Phone frame bezel */
+    .phone-bezel {
+      border: 12px solid #27272a;
+      border-radius: 44px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+    .phone-speaker {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 18px;
+      background: #09090b;
+      border-radius: 12px;
+      z-index: 40;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .phone-speaker::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      background: #18181b;
+      border-radius: 50%;
+      border: 2px solid #27272a;
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans antialiased overflow-hidden select-none">
+
+  <!-- ========================================================================= -->
+  <!-- UNIVERSAL PREVIEW BAR                                                     -->
+  <!-- ========================================================================= -->
+  <header class="h-14 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between z-50 flex-shrink-0 text-xs">
+    <!-- Left: Navigation between draft files -->
+    <div class="flex items-center space-x-1 sm:space-x-2">
+      <span class="font-mono text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mr-2 hidden md:inline">Drafts:</span>
+      <a href="00-design-system.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        00 Shell
+      </a>
+      <a href="01-portfolio.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        01 Portfolio
+      </a>
+      <a href="02-blog.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors bg-zinc-800 text-white border border-zinc-700 flex items-center gap-1.5 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
+        <span>02 Blog</span>
+      </a>
+      <a href="03-admin-cms.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        03 Admin
+      </a>
+    </div>
+
+    <!-- Center: Viewport Mode Switcher (Desktop 1440px vs Mobile 390px vs Fluid) -->
+    <div class="flex items-center bg-zinc-950/80 p-0.5 rounded-lg border border-zinc-800 shadow-inner">
+      <button id="btn-desktop" onclick="setViewportMode('desktop')" title="Desktop Viewport (1440px)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5">
+        <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">1440px</span>
+      </button>
+      <button id="btn-mobile" onclick="setViewportMode('mobile')" title="Mobile Viewport (390px - True iPhone Iframe)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5">
+        <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">390px</span>
+      </button>
+      <button id="btn-fluid" onclick="setViewportMode('fluid')" title="Full Browser Width (Responsive Fluid)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5">
+        <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Fluid</span>
+      </button>
+    </div>
+
+    <!-- Right: Theme & Accent Color Controls -->
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <!-- Accent Palette -->
+      <div class="flex items-center space-x-1.5 bg-zinc-950/80 px-2 py-1 rounded-lg border border-zinc-800">
+        <span class="text-[10px] font-mono text-zinc-500 mr-1 hidden lg:inline">ACCENT</span>
+        <button onclick="setAccent('#10B981')" title="Emerald (#10B981)" class="w-4 h-4 rounded-full bg-[#10B981] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch active-accent" data-color="#10B981"></button>
+        <button onclick="setAccent('#3B82F6')" title="Electric Blue (#3B82F6)" class="w-4 h-4 rounded-full bg-[#3B82F6] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch" data-color="#3B82F6"></button>
+        <button onclick="setAccent('#F59E0B')" title="Amber (#F59E0B)" class="w-4 h-4 rounded-full bg-[#F59E0B] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch" data-color="#F59E0B"></button>
+        <input type="color" id="custom-accent" value="#10B981" onchange="setAccent(this.value)" title="Custom Accent" class="w-4 h-4 rounded-full opacity-0 absolute pointer-events-none">
+        <button onclick="document.getElementById('custom-accent').click()" title="Pick Custom Color" class="w-4 h-4 rounded-full border border-dashed border-zinc-500 flex items-center justify-center text-[9px] text-zinc-400 hover:text-zinc-200">
+          +
+        </button>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button id="theme-toggle-btn" onclick="toggleTheme()" class="px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950/80 hover:bg-zinc-800 text-zinc-300 transition-colors flex items-center gap-1.5 font-mono text-[11px]" title="Toggle Dark/Light Mode">
+        <i data-lucide="moon" class="w-3.5 h-3.5" id="theme-icon"></i>
+        <span id="theme-text" class="hidden sm:inline">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- VIEWPORT STAGE CANVAS                                                     -->
+  <!-- ========================================================================= -->
+  <main id="viewport-stage" class="flex-1 bg-zinc-950 bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:16px_16px] flex items-center justify-center p-2 sm:p-6 overflow-hidden">
+    <!-- Container -->
+    <div id="frame-container" class="w-full h-full max-w-[1440px] flex flex-col transition-all duration-300 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/60 shadow-2xl">
+      <!-- Browser faux header -->
+      <div id="desktop-chrome" class="h-9 bg-zinc-900 border-b border-zinc-800 px-3 flex items-center justify-between text-xs text-zinc-400 select-none flex-shrink-0">
+        <div class="flex items-center space-x-2">
+          <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+          <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+          <span class="ml-2 font-mono text-[11px] text-zinc-400">Olehi Davis — Technical Blog &amp; Architecture Notes</span>
+        </div>
+        <div class="bg-zinc-950/70 border border-zinc-800 rounded-md px-3 py-0.5 text-[11px] font-mono text-zinc-400 flex items-center gap-1.5 w-80 justify-center">
+          <i data-lucide="lock" class="w-2.5 h-2.5 text-[var(--accent)]"></i>
+          <span id="current-url-display">https://olehidavis.dev/blog</span>
+        </div>
+        <div class="flex items-center space-x-2 text-[11px] font-mono text-zinc-500">
+          <span id="viewport-indicator">1440 x 900</span>
+        </div>
+      </div>
+
+      <!-- Phone notch/speaker (only shown in mobile mode) -->
+      <div id="mobile-notch" class="phone-speaker hidden"></div>
+
+      <!-- Real <iframe> for strict media-query isolation -->
+      <iframe id="preview-iframe" class="w-full flex-1 bg-zinc-950 border-0" src="about:blank"></iframe>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- INNER HTML SOURCE FOR 02-BLOG                                             -->
+  <!-- ========================================================================= -->
+  <script id="inner-html-template" type="text/template">
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Blog &amp; Architecture Reader</title>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"><\/script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: 'var(--accent, #10B981)',
+            'accent-muted': 'var(--accent-muted, rgba(16, 185, 129, 0.15))',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  <\/script>
+  <style>
+    :root {
+      --accent: #10B981;
+      --accent-muted: rgba(16, 185, 129, 0.15);
+    }
+    html.dark {
+      background-color: #09090b;
+      color: #fafafa;
+    }
+    html:not(.dark) {
+      background-color: #fafafa;
+      color: #09090b;
+    }
+    html:not(.dark) .bg-zinc-950 { background-color: #fafafa; }
+    html:not(.dark) .bg-zinc-900 { background-color: #f4f4f5; }
+    html:not(.dark) .border-zinc-800 { border-color: #e4e4e7; }
+    html:not(.dark) .text-zinc-100, html:not(.dark) .text-white { color: #09090b; }
+    html:not(.dark) .text-zinc-400 { color: #52525b; }
+    html:not(.dark) .text-zinc-300 { color: #3f3f46; }
+    html:not(.dark) .text-zinc-500 { color: #71717a; }
+
+    /* Top Reading Progress Bar */
+    #reading-progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: var(--accent);
+      width: 0%;
+      z-index: 60;
+      transition: width 0.1s ease-out;
+    }
+
+    /* Active Table of Contents link */
+    .toc-link.active {
+      color: var(--accent);
+      font-weight: 600;
+      border-left-color: var(--accent);
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-emerald-500/20 selection:text-emerald-300 relative pb-20">
+
+  <!-- Pinned Top Reading Progress Bar -->
+  <div id="reading-progress-bar"></div>
+
+  <!-- ========================================================================= -->
+  <!-- 1. STICKY NAVBAR WITH BLOG VIEW SWITCHER                                  -->
+  <!-- ========================================================================= -->
+  <nav class="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <!-- Monogram & Brand -->
+      <a href="01-portfolio.html" target="_parent" class="flex items-center space-x-3 group cursor-pointer">
+        <div class="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-700/80 flex items-center justify-center font-mono font-bold text-sm tracking-tight text-white group-hover:border-[var(--accent)] group-hover:text-[var(--accent)] transition-all shadow-sm">
+          OD
+        </div>
+        <div class="flex flex-col">
+          <span class="font-medium text-sm text-zinc-100 group-hover:text-white transition-colors">Olehi Davis</span>
+          <span class="text-[11px] font-mono text-zinc-500">Technical Blog</span>
+        </div>
+      </a>
+
+      <!-- Surface View Toggle (Index vs Article Reader) -->
+      <div class="flex items-center bg-zinc-900 p-1 rounded-xl border border-zinc-800 text-xs font-mono">
+        <button id="tab-index" onclick="switchBlogView('index')" class="px-3 py-1.5 rounded-lg font-medium transition-colors bg-zinc-800 text-white shadow-sm flex items-center gap-1.5">
+          <i data-lucide="list" class="w-3.5 h-3.5"></i>
+          <span>Blog Index</span>
+        </button>
+        <button id="tab-reader" onclick="switchBlogView('reader')" class="px-3 py-1.5 rounded-lg font-medium transition-colors text-zinc-400 hover:text-white flex items-center gap-1.5">
+          <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+          <span>Article Reader</span>
+        </button>
+      </div>
+
+      <!-- Right Back Link -->
+      <a href="01-portfolio.html" target="_parent" class="hidden sm:flex items-center gap-1.5 text-xs font-mono text-zinc-400 hover:text-white bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800 transition-colors">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span>Portfolio</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 1: BLOG INDEX SURFACE (/blog)                                        -->
+  <!-- ========================================================================= -->
+  <main id="view-index" class="max-w-4xl mx-auto px-4 sm:px-6 pt-10 space-y-10">
+    <!-- Header -->
+    <div class="space-y-4 border-b border-zinc-800/80 pb-8">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-mono text-[var(--accent)]">
+        <span>02 // ARCHITECTURE WRITINGS</span>
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-white">Engineering Notes &amp; Systems Architecture</h1>
+      <p class="text-sm sm:text-base text-zinc-400 max-w-2xl leading-relaxed">
+        Deep dives on distributed locking, idempotency guarantees, zero-downtime database migrations, and high-performance modern web architecture.
+      </p>
+
+      <!-- Search & Tag Filter Bar -->
+      <div class="pt-4 space-y-3">
+        <!-- Search Input -->
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          <input id="blog-search-input" type="text" placeholder="Search by title, technology, or topic (e.g., Redis, PostgreSQL, Raft)..." class="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-zinc-200 focus:outline-none focus:border-[var(--accent)] transition-colors" oninput="filterBlogPosts(this.value)">
+        </div>
+
+        <!-- Tag Pills -->
+        <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs font-mono">
+          <button onclick="filterBlogByTag('all')" class="blog-tag-btn px-3 py-1 rounded-lg bg-zinc-800 text-white border border-zinc-700" data-tag="all">All</button>
+          <button onclick="filterBlogByTag('Distributed Systems')" class="blog-tag-btn px-3 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800/60" data-tag="Distributed Systems">Distributed Systems</button>
+          <button onclick="filterBlogByTag('PostgreSQL')" class="blog-tag-btn px-3 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800/60" data-tag="PostgreSQL">PostgreSQL</button>
+          <button onclick="filterBlogByTag('Next.js')" class="blog-tag-btn px-3 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800/60" data-tag="Next.js">Next.js 15</button>
+          <button onclick="filterBlogByTag('Performance')" class="blog-tag-btn px-3 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800/60" data-tag="Performance">Performance</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blog Posts List -->
+    <div id="posts-container" class="space-y-6">
+      <!-- Article 1 (Featured) -->
+      <article class="post-item p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 hover:border-zinc-700 transition-all space-y-4 group cursor-pointer" data-tags="Distributed Systems,PostgreSQL" onclick="switchBlogView('reader')">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-zinc-400">
+          <div class="flex items-center gap-2">
+            <span class="text-zinc-500">2024.11.10</span>
+            <span>&bull;</span>
+            <span class="text-[var(--accent)]">Distributed Systems</span>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-[11px] text-zinc-400">8 min read</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-bold text-white group-hover:text-[var(--accent)] transition-colors leading-snug">
+          Building Distributed Idempotency Keys with Redis &amp; PostgreSQL
+        </h2>
+        <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+          How to eliminate duplicate payment mutations and API side-effects under high concurrency using atomic Redis leases and PostgreSQL transaction locks.
+        </p>
+        <div class="flex items-center justify-between pt-2">
+          <div class="flex items-center gap-1.5">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-400">Redis</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-400">PostgreSQL</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-400">Go</span>
+          </div>
+          <span class="text-xs font-mono text-white group-hover:text-[var(--accent)] flex items-center gap-1">
+            <span>Read Article</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </span>
+        </div>
+      </article>
+
+      <!-- Article 2 -->
+      <article class="post-item p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 hover:border-zinc-700 transition-all space-y-4 group cursor-pointer" data-tags="PostgreSQL,Performance" onclick="switchBlogView('reader')">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-zinc-400">
+          <div class="flex items-center gap-2">
+            <span class="text-zinc-500">2024.10.22</span>
+            <span>&bull;</span>
+            <span class="text-[var(--accent)]">Database Engineering</span>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-[11px] text-zinc-400">12 min read</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-bold text-white group-hover:text-[var(--accent)] transition-colors leading-snug">
+          Zero-Downtime Database Migrations in High-Throughput Production Environments
+        </h2>
+        <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+          Tactics for migrating schemas with millions of active rows: expand-contract workflows, lock timeouts, concurrent index creation, and shadow writing.
+        </p>
+        <div class="flex items-center justify-between pt-2">
+          <div class="flex items-center gap-1.5">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-400">PostgreSQL</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-400">Migrations</span>
+          </div>
+          <span class="text-xs font-mono text-white group-hover:text-[var(--accent)] flex items-center gap-1">
+            <span>Read Article</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </span>
+        </div>
+      </article>
+
+      <!-- Article 3 -->
+      <article class="post-item p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 hover:border-zinc-700 transition-all space-y-4 group cursor-pointer" data-tags="Next.js,Performance" onclick="switchBlogView('reader')">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-zinc-400">
+          <div class="flex items-center gap-2">
+            <span class="text-zinc-500">2024.09.18</span>
+            <span>&bull;</span>
+            <span class="text-[var(--accent)]">Web Architecture</span>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-[11px] text-zinc-400">7 min read</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-bold text-white group-hover:text-[var(--accent)] transition-colors leading-snug">
+          Optimizing Next.js 15 App Router: Server Components &amp; Edge Revalidation
+        </h2>
+        <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+          Deep architectural teardown of React Server Components, streaming SSR with Suspense, and on-demand cache invalidation via Server Actions.
+        </p>
+        <div class="flex items-center justify-between pt-2">
+          <div class="flex items-center gap-1.5">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-400">Next.js 15</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-400">React</span>
+          </div>
+          <span class="text-xs font-mono text-white group-hover:text-[var(--accent)] flex items-center gap-1">
+            <span>Read Article</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </span>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 2: ARTICLE READER SURFACE (/blog/[slug])                             -->
+  <!-- ========================================================================= -->
+  <main id="view-reader" class="hidden max-w-6xl mx-auto px-4 sm:px-6 pt-10">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+      <!-- Left / Main Article Column (8 cols on lg) -->
+      <article class="lg:col-span-8 space-y-10">
+        <!-- Back Link & Metadata -->
+        <div class="space-y-4 border-b border-zinc-800/80 pb-6">
+          <button onclick="switchBlogView('index')" class="inline-flex items-center gap-1.5 text-xs font-mono text-zinc-400 hover:text-white transition-colors">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Back to all articles</span>
+          </button>
+          
+          <div class="flex flex-wrap items-center gap-2 text-xs font-mono text-zinc-400">
+            <span class="text-zinc-500">2024.11.10</span>
+            <span>&bull;</span>
+            <span class="text-[var(--accent)]">Distributed Systems</span>
+            <span>&bull;</span>
+            <span>8 min read</span>
+          </div>
+
+          <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
+            Building Distributed Idempotency Keys with Redis &amp; PostgreSQL
+          </h1>
+
+          <div class="flex items-center space-x-3 pt-2">
+            <div class="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center font-mono font-bold text-xs text-[var(--accent)]">
+              OD
+            </div>
+            <div class="text-xs">
+              <div class="font-medium text-zinc-200">Olehi Davis</div>
+              <div class="text-zinc-500 font-mono text-[11px]">Senior Software Engineer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Collapsible Table of Contents Accordion -->
+        <div class="lg:hidden p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+          <button onclick="toggleMobileToc()" class="w-full flex items-center justify-between text-xs font-mono font-semibold text-zinc-200">
+            <span class="flex items-center gap-2">
+              <i data-lucide="list" class="w-3.5 h-3.5 text-[var(--accent)]"></i> Table of Contents
+            </span>
+            <i data-lucide="chevron-down" id="mobile-toc-icon" class="w-4 h-4 transition-transform"></i>
+          </button>
+          <div id="mobile-toc-content" class="hidden pt-2 space-y-1.5 text-xs font-mono text-zinc-400">
+            <a href="#section-problem" class="block py-1 hover:text-white">&rarr; 01 // The Duplicate Mutation Dilemma</a>
+            <a href="#section-architecture" class="block py-1 hover:text-white">&rarr; 02 // Two-Tier Lease Architecture</a>
+            <a href="#section-implementation" class="block py-1 hover:text-white">&rarr; 03 // Production Go Implementation</a>
+            <a href="#section-tradeoffs" class="block py-1 hover:text-white">&rarr; 04 // Failure Modes &amp; Recovery</a>
+          </div>
+        </div>
+
+        <!-- Article Body Prose -->
+        <div class="space-y-6 text-sm text-zinc-300 leading-relaxed font-sans">
+          <p>
+            In high-throughput transactional backends, duplicate requests are inevitable. Unreliable client mobile connections, automatic reverse-proxy retries, and network partition timeouts frequently cause the exact same mutation request to hit an API gateway multiple times in milliseconds.
+          </p>
+
+          <!-- Section 1 -->
+          <h2 id="section-problem" class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white pt-4 flex items-center gap-2">
+            <span class="text-[var(--accent)]">01 //</span> The Duplicate Mutation Dilemma
+          </h2>
+          <p>
+            Without strict idempotency guarantees, submitting an order or initiating a payment twice results in double billing. While standard database unique constraints work for simple records, complex workflows involving external third-party payment gateways (Stripe, Adyen) cannot be rolled back with a simple database rollback.
+          </p>
+
+          <!-- Callout Alert -->
+          <div class="p-4 rounded-xl bg-zinc-900/80 border-l-4 border-[var(--accent)] space-y-1 text-xs">
+            <div class="font-bold text-white font-mono flex items-center gap-1.5">
+              <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-[var(--accent)]"></i> Core Requirement
+            </div>
+            <p class="text-zinc-400">
+              An idempotency key must be atomic: if two concurrent threads submit key <code>idemp_48f9a2</code>, exactly one must proceed to execute the business logic, while the concurrent duplicate waits or returns the cached response.
+            </p>
+          </div>
+
+          <!-- Section 2 -->
+          <h2 id="section-architecture" class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white pt-4 flex items-center gap-2">
+            <span class="text-[var(--accent)]">02 //</span> Two-Tier Lease Architecture
+          </h2>
+          <p>
+            To achieve high performance without overloading the primary relational database, we pair an in-memory <strong>Redis distributed lock lease</strong> with a durable <strong>PostgreSQL write-ahead idempotency ledger</strong>.
+          </p>
+
+          <!-- Visual Architecture Block -->
+          <div class="p-4 rounded-xl bg-zinc-900 border border-zinc-800 font-mono text-xs text-zinc-300 space-y-1.5 overflow-x-auto">
+            <div class="text-[var(--accent)] font-bold">1. Client Request &rarr; Header: Idempotency-Key: uuid-4</div>
+            <div class="pl-4 text-zinc-400">2. Redis SETNX `idemp:{key}` with 30s TTL</div>
+            <div class="pl-8 text-emerald-400">&bull; If Locked &rarr; Poll for result or return 409 Conflict</div>
+            <div class="pl-8 text-white">&bull; If Acquired &rarr; Begin PostgreSQL Transaction</div>
+            <div class="pl-4 text-zinc-400">3. Execute Business Logic &rarr; Write Result to DB</div>
+            <div class="text-[var(--accent)] font-bold">4. Release Redis Lock &amp; Cache Final Response in Redis for 24h</div>
+          </div>
+
+          <!-- Section 3 -->
+          <h2 id="section-implementation" class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white pt-4 flex items-center gap-2">
+            <span class="text-[var(--accent)]">03 //</span> Production Go Implementation
+          </h2>
+          <p>
+            Below is the production-grade Go middleware demonstrating atomic key acquisition using Redis <code>SET NX EX</code>:
+          </p>
+
+          <!-- Shiki-Styled Code Block -->
+          <div class="rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 font-mono text-xs shadow-xl">
+            <!-- Code Header -->
+            <div class="bg-zinc-900 px-4 py-2 border-b border-zinc-800 flex items-center justify-between text-zinc-400 text-[11px]">
+              <div class="flex items-center gap-2">
+                <i data-lucide="file-code" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+                <span class="text-zinc-200">pkg/idempotency/middleware.go</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-zinc-500">Go 1.23</span>
+                <button onclick="copyCodeSnippet('go-code-block', this)" class="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white flex items-center gap-1 transition-colors">
+                  <i data-lucide="copy" class="w-3 h-3"></i>
+                  <span>Copy</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Code Content -->
+            <pre id="go-code-block" class="p-4 overflow-x-auto text-zinc-300 leading-relaxed text-[11px]"><code><span class="text-zinc-500">1  </span><span class="text-purple-400">package</span> idempotency
+<span class="text-zinc-500">2  </span>
+<span class="text-zinc-500">3  </span><span class="text-purple-400">func</span> (m *Middleware) <span class="text-blue-400">AcquireLease</span>(ctx context.Context, key <span class="text-cyan-400">string</span>) (<span class="text-cyan-400">bool</span>, <span class="text-cyan-400">error</span>) {
+<span class="text-zinc-500">4  </span>    redisKey := fmt.Sprintf(<span class="text-emerald-300">"idemp:%s"</span>, key)
+<span class="text-zinc-500">5  </span>    
+<span class="text-zinc-500">6  </span>    <span class="text-zinc-500">// Atomic SET if Not Exists with 30-second crash-recovery expiration</span>
+<span class="text-zinc-500">7  </span>    acquired, err := m.rdb.<span class="text-blue-400">SetNX</span>(ctx, redisKey, <span class="text-emerald-300">"PROCESSING"</span>, 30*time.Second).<span class="text-blue-400">Result</span>()
+<span class="text-zinc-500">8  </span>    <span class="text-purple-400">if</span> err != <span class="text-yellow-400">nil</span> {
+<span class="text-zinc-500">9  </span>        <span class="text-purple-400">return</span> <span class="text-yellow-400">false</span>, fmt.Errorf(<span class="text-emerald-300">"failed to query redis cluster: %w"</span>, err)
+<span class="text-zinc-500">10 </span>    }
+<span class="text-zinc-500">11 </span>    
+<span class="text-zinc-500">12 </span>    <span class="text-purple-400">return</span> acquired, <span class="text-yellow-400">nil</span>
+<span class="text-zinc-500">13 </span>}</code></pre>
+          </div>
+
+          <!-- Section 4 -->
+          <h2 id="section-tradeoffs" class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white pt-4 flex items-center gap-2">
+            <span class="text-[var(--accent)]">04 //</span> Failure Modes &amp; Recovery
+          </h2>
+          <p>
+            What happens if the backend worker node crashes mid-transaction after claiming the Redis lease?
+          </p>
+          <ul class="list-disc pl-5 space-y-2 text-zinc-400 text-xs sm:text-sm">
+            <li><strong>Lease Expiration:</strong> The 30-second TTL on Redis ensures that dead worker locks automatically expire, allowing subsequent retries to succeed.</li>
+            <li><strong>PostgreSQL WAL Verification:</strong> If the database committed before the worker crashed, the recovery worker detects the existing committed row in PostgreSQL and immediately updates Redis with the completed status.</li>
+          </ul>
+        </div>
+
+        <!-- Author Bio Footer -->
+        <div class="p-6 rounded-2xl bg-zinc-900/50 border border-zinc-800 flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-zinc-950 border border-zinc-700 flex items-center justify-center font-mono font-bold text-base text-[var(--accent)] shadow-sm">
+            OD
+          </div>
+          <div class="space-y-1">
+            <div class="font-bold text-white text-sm">Olehi Davis</div>
+            <p class="text-xs text-zinc-400">
+              Senior Software Engineer specializing in distributed backend systems, event streaming, and cloud platforms.
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <!-- Right Column: Sticky Table of Contents (4 cols on lg) -->
+      <aside class="hidden lg:block lg:col-span-4">
+        <div class="sticky top-24 space-y-6">
+          <div class="p-5 rounded-2xl bg-zinc-900/40 border border-zinc-800 space-y-3 font-mono text-xs">
+            <div class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5 pb-1 border-b border-zinc-800">
+              <i data-lucide="list" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+              <span>Table of Contents</span>
+            </div>
+            <nav class="space-y-2 border-l border-zinc-800 pl-3">
+              <a href="#section-problem" class="toc-link block text-zinc-400 hover:text-white transition-colors border-l-2 border-transparent -ml-[13px] pl-3 py-0.5">
+                01 // The Problem
+              </a>
+              <a href="#section-architecture" class="toc-link block text-zinc-400 hover:text-white transition-colors border-l-2 border-transparent -ml-[13px] pl-3 py-0.5">
+                02 // Lease Architecture
+              </a>
+              <a href="#section-implementation" class="toc-link block text-zinc-400 hover:text-white transition-colors border-l-2 border-transparent -ml-[13px] pl-3 py-0.5">
+                03 // Go Implementation
+              </a>
+              <a href="#section-tradeoffs" class="toc-link block text-zinc-400 hover:text-white transition-colors border-l-2 border-transparent -ml-[13px] pl-3 py-0.5">
+                04 // Failure Modes
+              </a>
+            </nav>
+          </div>
+
+          <!-- Share card -->
+          <div class="p-5 rounded-2xl bg-zinc-900/40 border border-zinc-800 space-y-3 text-xs font-mono">
+            <div class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Share Article</div>
+            <div class="flex gap-2">
+              <button onclick="navigator.clipboard.writeText(window.location.href); alert('Article URL copied!');" class="w-full py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-300 flex items-center justify-center gap-1.5 transition-colors">
+                <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                <span>Copy Link</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script>
+    lucide.createIcons();
+
+    // View Switcher between Blog Index and Article Reader
+    function switchBlogView(view) {
+      const indexView = document.getElementById('view-index');
+      const readerView = document.getElementById('view-reader');
+      const tabIndex = document.getElementById('tab-index');
+      const tabReader = document.getElementById('tab-reader');
+
+      if (view === 'reader') {
+        indexView.classList.add('hidden');
+        readerView.classList.remove('hidden');
+        tabReader.className = 'px-3 py-1.5 rounded-lg font-medium transition-colors bg-zinc-800 text-white shadow-sm flex items-center gap-1.5';
+        tabIndex.className = 'px-3 py-1.5 rounded-lg font-medium transition-colors text-zinc-400 hover:text-white flex items-center gap-1.5';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        readerView.classList.add('hidden');
+        indexView.classList.remove('hidden');
+        tabIndex.className = 'px-3 py-1.5 rounded-lg font-medium transition-colors bg-zinc-800 text-white shadow-sm flex items-center gap-1.5';
+        tabReader.className = 'px-3 py-1.5 rounded-lg font-medium transition-colors text-zinc-400 hover:text-white flex items-center gap-1.5';
+      }
+    }
+
+    // Scroll reading progress calculation
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+      const bar = document.getElementById('reading-progress-bar');
+      if (bar) bar.style.width = `${scrolled}%`;
+
+      // Update active TOC item
+      const sections = document.querySelectorAll('h2[id]');
+      let currentId = '';
+      sections.forEach(sec => {
+        const top = sec.getBoundingClientRect().top;
+        if (top <= 120) currentId = sec.getAttribute('id');
+      });
+
+      document.querySelectorAll('.toc-link').forEach(link => {
+        if (link.getAttribute('href') === `#${currentId}`) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+    });
+
+    // Copy Code Snippet
+    function copyCodeSnippet(elementId, btn) {
+      const code = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<i data-lucide="check" class="w-3 h-3 text-emerald-400"></i><span class="text-emerald-400">Copied!</span>`;
+        lucide.createIcons({ root: btn });
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          lucide.createIcons({ root: btn });
+        }, 2000);
+      });
+    }
+
+    // Mobile TOC toggle
+    function toggleMobileToc() {
+      const content = document.getElementById('mobile-toc-content');
+      const icon = document.getElementById('mobile-toc-icon');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        content.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // Filter Posts by Tag
+    function filterBlogByTag(tag) {
+      document.querySelectorAll('.blog-tag-btn').forEach(btn => {
+        if (btn.getAttribute('data-tag') === tag) {
+          btn.className = 'blog-tag-btn px-3 py-1 rounded-lg bg-zinc-800 text-white border border-zinc-700';
+        } else {
+          btn.className = 'blog-tag-btn px-3 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800/60';
+        }
+      });
+
+      document.querySelectorAll('#posts-container .post-item').forEach(post => {
+        const tags = post.getAttribute('data-tags');
+        if (tag === 'all' || tags.includes(tag)) {
+          post.style.display = 'block';
+        } else {
+          post.style.display = 'none';
+        }
+      });
+    }
+
+    // Search query filter
+    function filterBlogPosts(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('#posts-container .post-item').forEach(post => {
+        const text = post.textContent.toLowerCase();
+        post.style.display = text.includes(q) ? 'block' : 'none';
+      });
+    }
+  <\/script>
+</body>
+</html>
+  </script>
+
+  <!-- ========================================================================= -->
+  <!-- PREVIEW SHELL CONTROLLER                                                  -->
+  <!-- ========================================================================= -->
+  <script>
+    lucide.createIcons();
+
+    let currentMode = 'desktop';
+    let currentTheme = 'dark';
+    let currentAccent = '#10B981';
+
+    const iframe = document.getElementById('preview-iframe');
+    const container = document.getElementById('frame-container');
+    const notch = document.getElementById('mobile-notch');
+    const desktopChrome = document.getElementById('desktop-chrome');
+    const viewportIndicator = document.getElementById('viewport-indicator');
+
+    function loadIframeContent() {
+      const template = document.getElementById('inner-html-template').innerHTML;
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(template);
+      doc.close();
+
+      setTimeout(() => {
+        applyThemeToIframe();
+        applyAccentToIframe();
+      }, 50);
+    }
+
+    function setViewportMode(mode) {
+      currentMode = mode;
+      
+      document.getElementById('btn-desktop').className = mode === 'desktop' 
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+      
+      document.getElementById('btn-mobile').className = mode === 'mobile'
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+
+      document.getElementById('btn-fluid').className = mode === 'fluid'
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+
+      if (mode === 'desktop') {
+        container.style.width = '1440px';
+        container.style.maxWidth = '100%';
+        container.style.height = '100%';
+        container.classList.remove('phone-bezel');
+        container.classList.add('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.remove('hidden');
+        notch.classList.add('hidden');
+        viewportIndicator.textContent = '1440 x 900';
+      } else if (mode === 'mobile') {
+        container.style.width = '390px';
+        container.style.maxWidth = '390px';
+        container.style.height = '844px';
+        container.classList.add('phone-bezel');
+        container.classList.remove('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.add('hidden');
+        notch.classList.remove('hidden');
+        viewportIndicator.textContent = '390 x 844 (iPhone)';
+      } else if (mode === 'fluid') {
+        container.style.width = '100%';
+        container.style.maxWidth = '100%';
+        container.style.height = '100%';
+        container.classList.remove('phone-bezel');
+        container.classList.add('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.remove('hidden');
+        notch.classList.add('hidden');
+        viewportIndicator.textContent = `${window.innerWidth} x ${window.innerHeight}`;
+      }
+    }
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      const root = document.documentElement;
+      const themeText = document.getElementById('theme-text');
+      const themeIcon = document.getElementById('theme-icon');
+
+      if (currentTheme === 'light') {
+        root.classList.remove('dark');
+        themeText.textContent = 'Light';
+        themeIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        root.classList.add('dark');
+        themeText.textContent = 'Dark';
+        themeIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+      applyThemeToIframe();
+    }
+
+    function applyThemeToIframe() {
+      try {
+        const idoc = iframe.contentDocument || iframe.contentWindow.document;
+        if (currentTheme === 'light') {
+          idoc.documentElement.classList.remove('dark');
+          idoc.documentElement.classList.add('light');
+        } else {
+          idoc.documentElement.classList.add('dark');
+          idoc.documentElement.classList.remove('light');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function setAccent(color) {
+      currentAccent = color;
+      document.documentElement.style.setProperty('--accent', color);
+      
+      document.querySelectorAll('.accent-swatch').forEach(btn => {
+        if (btn.getAttribute('data-color') === color) {
+          btn.classList.add('ring-white');
+        } else {
+          btn.classList.remove('ring-white');
+        }
+      });
+      applyAccentToIframe();
+    }
+
+    function applyAccentToIframe() {
+      try {
+        const idoc = iframe.contentDocument || iframe.contentWindow.document;
+        idoc.documentElement.style.setProperty('--accent', currentAccent);
+        idoc.documentElement.style.setProperty('--accent-muted', `${currentAccent}26`);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    loadIframeContent();
+    setViewportMode('desktop');
+    setAccent('#10B981');
+  </script>
+</body>
+</html>
