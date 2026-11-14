@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protected Admin CMS &amp; Blog Studio Prototype | Olehi Davis</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: 'var(--accent, #10B981)',
+            'accent-muted': 'var(--accent-muted, rgba(16, 185, 129, 0.15))',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --accent: #10B981;
+      --accent-muted: rgba(16, 185, 129, 0.15);
+    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #09090b; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+    /* Phone frame bezel */
+    .phone-bezel {
+      border: 12px solid #27272a;
+      border-radius: 44px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+    .phone-speaker {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 18px;
+      background: #09090b;
+      border-radius: 12px;
+      z-index: 40;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .phone-speaker::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      background: #18181b;
+      border-radius: 50%;
+      border: 2px solid #27272a;
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans antialiased overflow-hidden select-none">
+
+  <!-- ========================================================================= -->
+  <!-- UNIVERSAL PREVIEW BAR                                                     -->
+  <!-- ========================================================================= -->
+  <header class="h-14 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between z-50 flex-shrink-0 text-xs">
+    <!-- Left: Navigation between draft files -->
+    <div class="flex items-center space-x-1 sm:space-x-2">
+      <span class="font-mono text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mr-2 hidden md:inline">Drafts:</span>
+      <a href="00-design-system.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        00 Shell
+      </a>
+      <a href="01-portfolio.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        01 Portfolio
+      </a>
+      <a href="02-blog.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        02 Blog
+      </a>
+      <a href="03-admin-cms.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors bg-zinc-800 text-white border border-zinc-700 flex items-center gap-1.5 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
+        <span>03 Admin</span>
+      </a>
+    </div>
+
+    <!-- Center: Viewport Mode Switcher (Desktop 1440px vs Mobile 390px vs Fluid) -->
+    <div class="flex items-center bg-zinc-950/80 p-0.5 rounded-lg border border-zinc-800 shadow-inner">
+      <button id="btn-desktop" onclick="setViewportMode('desktop')" title="Desktop Viewport (1440px)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5">
+        <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">1440px</span>
+      </button>
+      <button id="btn-mobile" onclick="setViewportMode('mobile')" title="Mobile Viewport (390px - True iPhone Iframe)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5">
+        <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">390px</span>
+      </button>
+      <button id="btn-fluid" onclick="setViewportMode('fluid')" title="Full Browser Width (Responsive Fluid)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5">
+        <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Fluid</span>
+      </button>
+    </div>
+
+    <!-- Right: Theme & Accent Color Controls -->
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <!-- Accent Palette -->
+      <div class="flex items-center space-x-1.5 bg-zinc-950/80 px-2 py-1 rounded-lg border border-zinc-800">
+        <span class="text-[10px] font-mono text-zinc-500 mr-1 hidden lg:inline">ACCENT</span>
+        <button onclick="setAccent('#10B981')" title="Emerald (#10B981)" class="w-4 h-4 rounded-full bg-[#10B981] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch active-accent" data-color="#10B981"></button>
+        <button onclick="setAccent('#3B82F6')" title="Electric Blue (#3B82F6)" class="w-4 h-4 rounded-full bg-[#3B82F6] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch" data-color="#3B82F6"></button>
+        <button onclick="setAccent('#F59E0B')" title="Amber (#F59E0B)" class="w-4 h-4 rounded-full bg-[#F59E0B] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch" data-color="#F59E0B"></button>
+        <input type="color" id="custom-accent" value="#10B981" onchange="setAccent(this.value)" title="Custom Accent" class="w-4 h-4 rounded-full opacity-0 absolute pointer-events-none">
+        <button onclick="document.getElementById('custom-accent').click()" title="Pick Custom Color" class="w-4 h-4 rounded-full border border-dashed border-zinc-500 flex items-center justify-center text-[9px] text-zinc-400 hover:text-zinc-200">
+          +
+        </button>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button id="theme-toggle-btn" onclick="toggleTheme()" class="px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950/80 hover:bg-zinc-800 text-zinc-300 transition-colors flex items-center gap-1.5 font-mono text-[11px]" title="Toggle Dark/Light Mode">
+        <i data-lucide="moon" class="w-3.5 h-3.5" id="theme-icon"></i>
+        <span id="theme-text" class="hidden sm:inline">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- VIEWPORT STAGE CANVAS                                                     -->
+  <!-- ========================================================================= -->
+  <main id="viewport-stage" class="flex-1 bg-zinc-950 bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:16px_16px] flex items-center justify-center p-2 sm:p-6 overflow-hidden">
+    <!-- Container -->
+    <div id="frame-container" class="w-full h-full max-w-[1440px] flex flex-col transition-all duration-300 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/60 shadow-2xl">
+      <!-- Browser faux header -->
+      <div id="desktop-chrome" class="h-9 bg-zinc-900 border-b border-zinc-800 px-3 flex items-center justify-between text-xs text-zinc-400 select-none flex-shrink-0">
+        <div class="flex items-center space-x-2">
+          <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+          <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+          <span class="ml-2 font-mono text-[11px] text-zinc-400">Olehi Davis — Headless Admin CMS &amp; Split Studio</span>
+        </div>
+        <div class="bg-zinc-950/70 border border-zinc-800 rounded-md px-3 py-0.5 text-[11px] font-mono text-zinc-400 flex items-center gap-1.5 w-80 justify-center">
+          <i data-lucide="lock" class="w-2.5 h-2.5 text-[var(--accent)]"></i>
+          <span>https://olehidavis.dev/admin</span>
+        </div>
+        <div class="flex items-center space-x-2 text-[11px] font-mono text-zinc-500">
+          <span id="viewport-indicator">1440 x 900</span>
+        </div>
+      </div>
+
+      <!-- Phone notch/speaker (only shown in mobile mode) -->
+      <div id="mobile-notch" class="phone-speaker hidden"></div>
+
+      <!-- Real <iframe> for strict media-query isolation -->
+      <iframe id="preview-iframe" class="w-full flex-1 bg-zinc-950 border-0" src="about:blank"></iframe>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- INNER HTML SOURCE FOR 03-ADMIN-CMS                                        -->
+  <!-- ========================================================================= -->
+  <script id="inner-html-template" type="text/template">
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin CMS Dashboard &amp; Studio</title>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"><\/script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: 'var(--accent, #10B981)',
+            'accent-muted': 'var(--accent-muted, rgba(16, 185, 129, 0.15))',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  <\/script>
+  <style>
+    :root {
+      --accent: #10B981;
+      --accent-muted: rgba(16, 185, 129, 0.15);
+    }
+    html.dark {
+      background-color: #09090b;
+      color: #fafafa;
+    }
+    html:not(.dark) {
+      background-color: #fafafa;
+      color: #09090b;
+    }
+    html:not(.dark) .bg-zinc-950 { background-color: #fafafa; }
+    html:not(.dark) .bg-zinc-900 { background-color: #f4f4f5; }
+    html:not(.dark) .border-zinc-800 { border-color: #e4e4e7; }
+    html:not(.dark) .text-zinc-100, html:not(.dark) .text-white { color: #09090b; }
+    html:not(.dark) .text-zinc-400 { color: #52525b; }
+    html:not(.dark) .text-zinc-300 { color: #3f3f46; }
+    html:not(.dark) .text-zinc-500 { color: #71717a; }
+
+    /* Custom drop zone states */
+    .dropzone-dragging {
+      border-color: var(--accent) !important;
+      background-color: var(--accent-muted) !important;
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-emerald-500/20 selection:text-emerald-300 flex flex-col">
+
+  <!-- ========================================================================= -->
+  <!-- TOP SUB-BAR: ADMIN MODULE SCREEN SWITCHER                                 -->
+  <!-- ========================================================================= -->
+  <div class="h-12 border-b border-zinc-800 bg-zinc-900/60 backdrop-blur-md px-4 flex items-center justify-between text-xs font-mono flex-shrink-0">
+    <div class="flex items-center space-x-1 overflow-x-auto py-1">
+      <span class="text-zinc-500 mr-2 text-[10px] uppercase tracking-wider hidden sm:inline">Module:</span>
+      <button onclick="setAdminScreen('overview')" id="screen-btn-overview" class="screen-tab px-2.5 py-1 rounded-md bg-zinc-800 text-white border border-zinc-700 flex items-center gap-1.5">
+        <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+        <span>Overview</span>
+      </button>
+      <button onclick="setAdminScreen('settings')" id="screen-btn-settings" class="screen-tab px-2.5 py-1 rounded-md text-zinc-400 hover:text-white flex items-center gap-1.5">
+        <i data-lucide="user-cog" class="w-3.5 h-3.5"></i>
+        <span>Site Profile</span>
+      </button>
+      <button onclick="setAdminScreen('projects')" id="screen-btn-projects" class="screen-tab px-2.5 py-1 rounded-md text-zinc-400 hover:text-white flex items-center gap-1.5">
+        <i data-lucide="folder-git-2" class="w-3.5 h-3.5"></i>
+        <span>Projects CRUD</span>
+      </button>
+      <button onclick="setAdminScreen('studio')" id="screen-btn-studio" class="screen-tab px-2.5 py-1 rounded-md text-zinc-400 hover:text-white flex items-center gap-1.5">
+        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+        <span>Blog Studio</span>
+      </button>
+      <button onclick="setAdminScreen('login')" id="screen-btn-login" class="screen-tab px-2.5 py-1 rounded-md text-zinc-400 hover:text-white flex items-center gap-1.5">
+        <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+        <span>Login View</span>
+      </button>
+    </div>
+
+    <!-- Live site preview link -->
+    <a href="01-portfolio.html" target="_parent" class="hidden md:flex items-center gap-1 text-[11px] text-[var(--accent)] hover:underline">
+      <span>View Live Portfolio</span>
+      <i data-lucide="external-link" class="w-3 h-3"></i>
+    </a>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN ADMIN LAYOUT CONTAINER                                               -->
+  <!-- ========================================================================= -->
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- DESKTOP COLLAPSIBLE SIDEBAR (Hidden on mobile / 390px) -->
+    <aside id="admin-sidebar" class="w-60 border-r border-zinc-800 bg-zinc-950 flex flex-col justify-between p-4 hidden md:flex flex-shrink-0">
+      <div class="space-y-6">
+        <!-- Logo / Monogram -->
+        <div class="flex items-center space-x-3 px-2">
+          <div class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-700 flex items-center justify-center font-mono font-bold text-xs text-[var(--accent)] shadow-sm">
+            OD
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white">Olehi Davis CMS</div>
+            <div class="text-[10px] font-mono text-zinc-500">v1.0.0 &bull; Supabase RLS</div>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="space-y-1 text-xs font-mono">
+          <button onclick="setAdminScreen('overview')" class="sidebar-link w-full px-3 py-2 rounded-lg flex items-center gap-2.5 text-white bg-zinc-900 border border-zinc-800">
+            <i data-lucide="layout-dashboard" class="w-4 h-4 text-[var(--accent)]"></i>
+            <span>Overview</span>
+          </button>
+          <button onclick="setAdminScreen('settings')" class="sidebar-link w-full px-3 py-2 rounded-lg flex items-center gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-900/60 transition-colors">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+            <span>Site &amp; Bio Settings</span>
+          </button>
+          <button onclick="setAdminScreen('projects')" class="sidebar-link w-full px-3 py-2 rounded-lg flex items-center gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-900/60 transition-colors">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+            <span>Projects &amp; Case Studies</span>
+          </button>
+          <button onclick="setAdminScreen('studio')" class="sidebar-link w-full px-3 py-2 rounded-lg flex items-center gap-2.5 text-zinc-400 hover:text-white hover:bg-zinc-900/60 transition-colors">
+            <i data-lucide="file-edit" class="w-4 h-4"></i>
+            <span>Split Blog Studio</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- User footer profile -->
+      <div class="border-t border-zinc-800 pt-3 flex items-center justify-between text-xs">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[10px] font-mono font-bold text-emerald-400">
+            A
+          </div>
+          <div class="flex flex-col">
+            <span class="font-medium text-white text-[11px]">admin@olehidavis.dev</span>
+            <span class="text-[9px] font-mono text-emerald-400">Authenticated</span>
+          </div>
+        </div>
+        <button onclick="setAdminScreen('login')" title="Log Out" class="text-zinc-500 hover:text-red-400 p-1">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN BODY CONTENT AREA -->
+    <main class="flex-1 overflow-y-auto p-4 sm:p-8 bg-zinc-950 pb-20 md:pb-8">
+
+      <!-- ===================================================================== -->
+      <!-- SCREEN 1: OVERVIEW DASHBOARD                                          -->
+      <!-- ===================================================================== -->
+      <div id="screen-overview" class="space-y-6 max-w-5xl mx-auto">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+          <div>
+            <h1 class="text-2xl font-bold text-white">System Overview</h1>
+            <p class="text-xs text-zinc-400 font-mono mt-0.5">Admin CMS Status &amp; Live Telemetry</p>
+          </div>
+          <!-- Live availability toggle -->
+          <div class="flex items-center space-x-3 bg-zinc-900 px-3 py-2 rounded-xl border border-zinc-800 text-xs font-mono">
+            <span class="text-zinc-400">Status:</span>
+            <button id="admin-avail-toggle" onclick="toggleAdminAvailability()" class="w-10 h-5 bg-[var(--accent)] rounded-full relative transition-colors p-0.5 flex items-center">
+              <div id="admin-avail-knob" class="w-4 h-4 bg-black rounded-full transition-transform translate-x-5 shadow"></div>
+            </button>
+            <span id="admin-avail-text" class="text-white font-semibold">Available for Work</span>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800 space-y-1">
+            <div class="text-[11px] font-mono text-zinc-400">Total Projects</div>
+            <div class="text-2xl font-bold font-mono text-white">8</div>
+            <div class="text-[10px] font-mono text-emerald-400">4 Featured</div>
+          </div>
+          <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800 space-y-1">
+            <div class="text-[11px] font-mono text-zinc-400">Published Posts</div>
+            <div class="text-2xl font-bold font-mono text-white">12</div>
+            <div class="text-[10px] font-mono text-zinc-500">3 Drafts</div>
+          </div>
+          <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800 space-y-1">
+            <div class="text-[11px] font-mono text-zinc-400">Monthly Visitors</div>
+            <div class="text-2xl font-bold font-mono text-white">48.2k</div>
+            <div class="text-[10px] font-mono text-emerald-400">+14% vs last month</div>
+          </div>
+          <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800 space-y-1">
+            <div class="text-[11px] font-mono text-zinc-400">Resume Downloads</div>
+            <div class="text-2xl font-bold font-mono text-white">1,420</div>
+            <div class="text-[10px] font-mono text-[var(--accent)]">High intent leads</div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="p-5 rounded-2xl bg-zinc-900/30 border border-zinc-800 space-y-4">
+          <div class="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider flex items-center justify-between">
+            <span>Recent CMS Actions &amp; Cache Invalidation Logs</span>
+            <span class="text-[10px] font-normal text-emerald-400 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live revalidatePath()
+            </span>
+          </div>
+          <div class="space-y-2 text-xs font-mono text-zinc-400">
+            <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+                <span>Updated &ldquo;HyperQueue&rdquo; case study Markdown</span>
+              </div>
+              <span class="text-zinc-600 text-[10px]">2 mins ago</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-400"></i>
+                <span>Uploaded replacement resume: Olehi_Davis_CV_2026.pdf</span>
+              </div>
+              <span class="text-zinc-600 text-[10px]">1 hour ago</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>Published article: Building Distributed Idempotency Keys</span>
+              </div>
+              <span class="text-zinc-600 text-[10px]">Yesterday</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- SCREEN 2: PROFILE & SITE SETTINGS WITH DRAG & DROP                     -->
+      <!-- ===================================================================== -->
+      <div id="screen-settings" class="hidden space-y-6 max-w-4xl mx-auto">
+        <div class="border-b border-zinc-800 pb-4">
+          <h1 class="text-2xl font-bold text-white">Site Profile &amp; Settings</h1>
+          <p class="text-xs text-zinc-400 font-mono mt-0.5">Manage Bio, Social Links, Resume PDF, and Brand Accent</p>
+        </div>
+
+        <form onsubmit="event.preventDefault(); showAdminToast('Profile changes saved &amp; cache revalidated!', 'success');" class="space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-xs font-mono text-zinc-400">Full Name</label>
+              <input type="text" value="Olehi Davis" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[var(--accent)]">
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-xs font-mono text-zinc-400">Location Tagline</label>
+              <input type="text" value="Nigeria • Remote Worldwide" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[var(--accent)]">
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-xs font-mono text-zinc-400">Engineering Headline</label>
+            <input type="text" value="Senior Software Engineer — Distributed Systems & Modern Web Architecture" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[var(--accent)]">
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-xs font-mono text-zinc-400">Markdown Bio</label>
+            <textarea rows="3" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-xs text-white font-mono focus:outline-none focus:border-[var(--accent)]">Designing resilient backend services, developer tooling, and high-craft web applications for global scale.</textarea>
+          </div>
+
+          <!-- Drag and Drop Asset Uploader -->
+          <div class="space-y-2">
+            <label class="text-xs font-mono text-zinc-400 flex items-center justify-between">
+              <span>Resume PDF &amp; Asset Hygiene Uploader</span>
+              <span class="text-[10px] text-zinc-500">portfolio-assets/resumes/</span>
+            </label>
+            <div id="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" class="border-2 border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-900/30 rounded-2xl p-6 text-center space-y-3 cursor-pointer transition-all">
+              <div class="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 mx-auto flex items-center justify-center text-zinc-400">
+                <i data-lucide="upload-cloud" class="w-6 h-6 text-[var(--accent)]"></i>
+              </div>
+              <div>
+                <div class="text-xs font-medium text-white">Drag &amp; drop updated Resume PDF here, or <span class="text-[var(--accent)] underline">browse files</span></div>
+                <div class="text-[10px] font-mono text-zinc-500 mt-1">Automatic orphan deletion: replaces existing file path seamlessly</div>
+              </div>
+              <input type="file" id="resume-file-input" class="hidden" onchange="simulateUpload(this.files[0])">
+            </div>
+
+            <!-- Uploaded File State Preview -->
+            <div id="upload-status-card" class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between text-xs font-mono">
+              <div class="flex items-center gap-3">
+                <i data-lucide="file-check" class="w-4 h-4 text-emerald-400"></i>
+                <div>
+                  <div class="text-zinc-200">Olehi_Davis_Senior_Engineer_CV.pdf</div>
+                  <div class="text-[10px] text-zinc-500">184 KB &bull; Uploaded to Supabase Storage</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="showAdminToast('Opening resume...', 'info')" class="text-zinc-400 hover:text-white p-1">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+                <button type="button" onclick="showAdminToast('Old asset purged from storage', 'warning')" class="text-zinc-500 hover:text-red-400 p-1">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-mono font-semibold text-black flex items-center gap-2 shadow-lg" style="background-color: var(--accent);">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            <span>Save Profile &amp; Invalidate Edge Cache</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- SCREEN 3: PROJECTS CRUD TABLE                                         -->
+      <!-- ===================================================================== -->
+      <div id="screen-projects" class="hidden space-y-6 max-w-5xl mx-auto">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+          <div>
+            <h1 class="text-2xl font-bold text-white">Projects &amp; Case Studies</h1>
+            <p class="text-xs text-zinc-400 font-mono mt-0.5">Manage Portfolio Showcase, Ordering, &amp; Markdown Case Studies</p>
+          </div>
+          <button onclick="showAdminToast('New project modal opened', 'info')" class="px-3.5 py-2 rounded-xl text-xs font-mono font-semibold text-black flex items-center gap-1.5 shadow-md self-start" style="background-color: var(--accent);">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add New Project</span>
+          </button>
+        </div>
+
+        <!-- Table -->
+        <div class="rounded-xl border border-zinc-800 bg-zinc-900/30 overflow-hidden font-mono text-xs">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 text-[11px]">
+                <tr>
+                  <th class="p-3 w-12 text-center">Order</th>
+                  <th class="p-3">Title &amp; Slug</th>
+                  <th class="p-3">Tech Stack</th>
+                  <th class="p-3 text-center">Featured</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-zinc-800/80 text-zinc-300">
+                <!-- Row 1 -->
+                <tr class="hover:bg-zinc-900/40">
+                  <td class="p-3 text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      <button onclick="reorderProject(1, 'up')" class="text-zinc-500 hover:text-white">&uarr;</button>
+                      <button onclick="reorderProject(1, 'down')" class="text-zinc-500 hover:text-white">&darr;</button>
+                    </div>
+                  </td>
+                  <td class="p-3">
+                    <div class="font-bold text-white font-sans text-sm">HyperQueue</div>
+                    <div class="text-[10px] text-zinc-500">/projects/hyperqueue</div>
+                  </td>
+                  <td class="p-3">
+                    <div class="flex flex-wrap gap-1 text-[10px]">
+                      <span class="px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-400">Go</span>
+                      <span class="px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-400">Raft</span>
+                      <span class="px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-400">PostgreSQL</span>
+                    </div>
+                  </td>
+                  <td class="p-3 text-center">
+                    <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Yes</span>
+                  </td>
+                  <td class="p-3 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button onclick="showAdminToast('Editing HyperQueue...', 'info')" class="p-1 text-zinc-400 hover:text-white"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
+                      <button onclick="showAdminToast('Project removed', 'warning')" class="p-1 text-zinc-500 hover:text-red-400"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr class="hover:bg-zinc-900/40">
+                  <td class="p-3 text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      <button onclick="reorderProject(2, 'up')" class="text-zinc-500 hover:text-white">&uarr;</button>
+                      <button onclick="reorderProject(2, 'down')" class="text-zinc-500 hover:text-white">&darr;</button>
+                    </div>
+                  </td>
+                  <td class="p-3">
+                    <div class="font-bold text-white font-sans text-sm">Vanguard Gateway</div>
+                    <div class="text-[10px] text-zinc-500">/projects/vanguard</div>
+                  </td>
+                  <td class="p-3">
+                    <div class="flex flex-wrap gap-1 text-[10px]">
+                      <span class="px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-400">Go</span>
+                      <span class="px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-400">eBPF</span>
+                    </div>
+                  </td>
+                  <td class="p-3 text-center">
+                    <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Yes</span>
+                  </td>
+                  <td class="p-3 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button onclick="showAdminToast('Editing Vanguard...', 'info')" class="p-1 text-zinc-400 hover:text-white"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
+                      <button onclick="showAdminToast('Project removed', 'warning')" class="p-1 text-zinc-500 hover:text-red-400"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- SCREEN 4: SPLIT-PANE MARKDOWN BLOG STUDIO                             -->
+      <!-- ===================================================================== -->
+      <div id="screen-studio" class="hidden space-y-4 max-w-6xl mx-auto h-full flex flex-col">
+        <!-- Top bar of blog studio -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-3 flex-shrink-0">
+          <div>
+            <h1 class="text-xl font-bold text-white">Split Markdown Blog Studio</h1>
+            <p class="text-[11px] text-zinc-400 font-mono">Live Side-by-Side Typography &amp; Code Highlighting Preview</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <!-- Mobile Tab Switcher for 390px screens (Write vs Preview vs Settings) -->
+            <div class="flex sm:hidden bg-zinc-900 p-0.5 rounded-lg border border-zinc-800 text-[11px] font-mono">
+              <button onclick="setMobileStudioTab('editor')" id="m-tab-editor" class="px-2.5 py-1 rounded bg-zinc-800 text-white">Write</button>
+              <button onclick="setMobileStudioTab('preview')" id="m-tab-preview" class="px-2.5 py-1 rounded text-zinc-400">Preview</button>
+            </div>
+            <button onclick="showAdminToast('Article saved to Supabase &amp; published!', 'success')" class="px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold text-black flex items-center gap-1.5 shadow" style="background-color: var(--accent);">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Publish Live</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Split Panes -->
+        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 min-h-[500px]">
+          <!-- Left Pane: Editor -->
+          <div id="studio-editor-pane" class="flex flex-col space-y-3 p-4 rounded-xl bg-zinc-900/40 border border-zinc-800">
+            <div class="space-y-2 flex-shrink-0">
+              <input type="text" id="post-title-input" value="Building Distributed Idempotency Keys with Redis" oninput="updateLiveMarkdownPreview()" placeholder="Article Title..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white font-semibold focus:outline-none focus:border-[var(--accent)]">
+              <div class="flex gap-2">
+                <input type="text" value="building-distributed-idempotency-keys" placeholder="slug" class="w-1/2 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-400 font-mono">
+                <input type="text" value="Distributed Systems, Redis" placeholder="tags (comma separated)" class="w-1/2 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-400 font-mono">
+              </div>
+            </div>
+
+            <!-- Editor Toolbar -->
+            <div class="flex items-center space-x-1 border-y border-zinc-800 py-1.5 text-zinc-400 text-xs font-mono flex-shrink-0">
+              <button onclick="insertMd('**', '**')" class="p-1 hover:text-white rounded hover:bg-zinc-800" title="Bold"><strong>B</strong></button>
+              <button onclick="insertMd('*', '*')" class="p-1 hover:text-white rounded hover:bg-zinc-800" title="Italic"><em>I</em></button>
+              <button onclick="insertMd('## ', '')" class="p-1 hover:text-white rounded hover:bg-zinc-800" title="H2">H2</button>
+              <button onclick="insertMd('```go\n', '\n```')" class="p-1 hover:text-white rounded hover:bg-zinc-800" title="Code Block">&lt;/&gt;</button>
+              <button onclick="insertMd('> [!NOTE]\n> ', '')" class="p-1 hover:text-white rounded hover:bg-zinc-800" title="Callout">Alert</button>
+            </div>
+
+            <!-- Textarea -->
+            <textarea id="markdown-input" oninput="updateLiveMarkdownPreview()" class="flex-1 w-full bg-transparent text-xs font-mono text-zinc-200 resize-none focus:outline-none leading-relaxed" placeholder="Write markdown...">## 01 // The Problem
+
+In high-throughput transactional backends, duplicate requests are inevitable due to client retries and network partitions.
+
+```go
+// Atomic SETNX lease acquisition in Go
+acquired, err := redisClient.SetNX(ctx, "idemp:" + key, "LOCKED", 30*time.Second).Result()
+```
+
+### Key Trade-offs
+- Latency vs strict consistency
+- Automatic lease expiration on worker crash</textarea>
+          </div>
+
+          <!-- Right Pane: Live Rendered Preview -->
+          <div id="studio-preview-pane" class="p-5 rounded-xl bg-zinc-950 border border-zinc-800 overflow-y-auto space-y-4">
+            <div class="flex items-center justify-between border-b border-zinc-800/80 pb-2 text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+              <span>Live Rendered Output</span>
+              <span class="text-emerald-400">Dual-Theme Synced</span>
+            </div>
+            
+            <h1 id="preview-title" class="text-2xl font-bold text-white tracking-tight">Building Distributed Idempotency Keys with Redis</h1>
+            <div id="preview-body" class="space-y-3 text-xs text-zinc-300 font-sans leading-relaxed">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- SCREEN 5: LOGIN SCREEN                                                -->
+      <!-- ===================================================================== -->
+      <div id="screen-login" class="hidden flex items-center justify-center min-h-[500px]">
+        <div class="w-full max-w-sm p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800 shadow-2xl space-y-6">
+          <div class="text-center space-y-1">
+            <div class="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-700 mx-auto flex items-center justify-center font-mono font-bold text-sm text-[var(--accent)] shadow-md">
+              OD
+            </div>
+            <h2 class="text-xl font-bold text-white pt-2">Admin Authentication</h2>
+            <p class="text-xs text-zinc-400 font-mono">Protected by Supabase Middleware</p>
+          </div>
+
+          <form onsubmit="event.preventDefault(); showAdminToast('Authenticated! Redirecting to Overview...', 'success'); setAdminScreen('overview');" class="space-y-4">
+            <div class="space-y-1.5 text-xs font-mono">
+              <label class="text-zinc-400">Admin Email</label>
+              <input type="email" id="login-email" value="admin@olehidavis.dev" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[var(--accent)]">
+            </div>
+            <div class="space-y-1.5 text-xs font-mono">
+              <label class="text-zinc-400">Password</label>
+              <input type="password" id="login-pwd" value="••••••••••••" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[var(--accent)]">
+            </div>
+            <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-mono font-semibold text-black shadow-lg" style="background-color: var(--accent);">
+              Sign In to CMS
+            </button>
+          </form>
+
+          <button onclick="fillDemoCreds()" class="w-full py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-[11px] font-mono text-zinc-400 hover:text-white transition-colors">
+            Auto-Fill Demo Credentials
+          </button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Nav for 390px Viewports -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-zinc-950/95 backdrop-blur-md border-t border-zinc-800 flex items-center justify-around px-2 z-40 text-[10px] font-mono">
+    <button onclick="setAdminScreen('overview')" class="flex flex-col items-center gap-0.5 text-[var(--accent)]">
+      <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+      <span>Overview</span>
+    </button>
+    <button onclick="setAdminScreen('settings')" class="flex flex-col items-center gap-0.5 text-zinc-400 hover:text-white">
+      <i data-lucide="settings" class="w-4 h-4"></i>
+      <span>Settings</span>
+    </button>
+    <button onclick="setAdminScreen('projects')" class="flex flex-col items-center gap-0.5 text-zinc-400 hover:text-white">
+      <i data-lucide="layers" class="w-4 h-4"></i>
+      <span>Projects</span>
+    </button>
+    <button onclick="setAdminScreen('studio')" class="flex flex-col items-center gap-0.5 text-zinc-400 hover:text-white">
+      <i data-lucide="file-edit" class="w-4 h-4"></i>
+      <span>Studio</span>
+    </button>
+  </nav>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Scripts -->
+  <script>
+    lucide.createIcons();
+
+    function setAdminScreen(screen) {
+      const screens = ['overview', 'settings', 'projects', 'studio', 'login'];
+      screens.forEach(s => {
+        const el = document.getElementById(`screen-${s}`);
+        const btn = document.getElementById(`screen-btn-${s}`);
+        if (s === screen) {
+          if (el) el.classList.remove('hidden');
+          if (btn) btn.className = 'screen-tab px-2.5 py-1 rounded-md bg-zinc-800 text-white border border-zinc-700 flex items-center gap-1.5';
+        } else {
+          if (el) el.classList.add('hidden');
+          if (btn) btn.className = 'screen-tab px-2.5 py-1 rounded-md text-zinc-400 hover:text-white flex items-center gap-1.5';
+        }
+      });
+      if (screen === 'studio') updateLiveMarkdownPreview();
+    }
+
+    // Availability switch in admin
+    let adminAvail = true;
+    function toggleAdminAvailability() {
+      adminAvail = !adminAvail;
+      const knob = document.getElementById('admin-avail-knob');
+      const btn = document.getElementById('admin-avail-toggle');
+      const text = document.getElementById('admin-avail-text');
+      if (adminAvail) {
+        knob.style.transform = 'translateX(20px)';
+        btn.style.backgroundColor = 'var(--accent)';
+        text.textContent = 'Available for Work';
+        showAdminToast('Availability set to OPEN across public site', 'success');
+      } else {
+        knob.style.transform = 'translateX(0px)';
+        btn.style.backgroundColor = '#3f3f46';
+        text.textContent = 'Unavailable';
+        showAdminToast('Availability set to BUSY', 'warning');
+      }
+    }
+
+    // Drag and drop handlers
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.add('dropzone-dragging');
+    }
+    function handleDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.remove('dropzone-dragging');
+    }
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.remove('dropzone-dragging');
+      const file = e.dataTransfer.files[0];
+      if (file) simulateUpload(file);
+    }
+    function simulateUpload(file) {
+      showAdminToast(`Uploading ${file.name} to portfolio-assets/resumes/...`, 'info');
+      setTimeout(() => {
+        showAdminToast(`Replaced old asset with ${file.name} successfully!`, 'success');
+      }, 1200);
+    }
+
+    // Live Markdown Editor synchronization
+    function updateLiveMarkdownPreview() {
+      const title = document.getElementById('post-title-input').value;
+      const md = document.getElementById('markdown-input').value;
+      document.getElementById('preview-title').textContent = title || 'Untitled Article';
+
+      // Simple markdown parser simulation
+      let html = md
+        .replace(/^## (.*$)/gim, '<h2 class="text-lg font-bold text-white font-mono pt-3 pb-1">$1</h2>')
+        .replace(/^### (.*$)/gim, '<h3 class="text-sm font-bold text-zinc-200 font-mono pt-2">$1</h3>')
+        .replace(/\*\*(.*?)\*\*/gim, '<strong class="text-white">$1</strong>')
+        .replace(/\*(.*?)\*/gim, '<em class="text-zinc-300">$1</em>')
+        .replace(/```go([\s\S]*?)```/gim, '<pre class="bg-zinc-900 border border-zinc-800 p-3 rounded-lg font-mono text-[11px] text-emerald-400 overflow-x-auto">$1</pre>')
+        .replace(/^- (.*$)/gim, '<li class="list-disc pl-2 ml-4 text-zinc-400">$1</li>');
+
+      document.getElementById('preview-body').innerHTML = html;
+    }
+
+    function insertMd(before, after) {
+      const textarea = document.getElementById('markdown-input');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      textarea.value = text.substring(0, start) + before + text.substring(start, end) + after + text.substring(end);
+      updateLiveMarkdownPreview();
+    }
+
+    // Mobile Studio Tab switcher
+    function setMobileStudioTab(tab) {
+      const editor = document.getElementById('studio-editor-pane');
+      const preview = document.getElementById('studio-preview-pane');
+      const tabEd = document.getElementById('m-tab-editor');
+      const tabPr = document.getElementById('m-tab-preview');
+
+      if (tab === 'preview') {
+        editor.classList.add('hidden');
+        preview.classList.remove('hidden');
+        tabPr.className = 'px-2.5 py-1 rounded bg-zinc-800 text-white';
+        tabEd.className = 'px-2.5 py-1 rounded text-zinc-400';
+      } else {
+        preview.classList.add('hidden');
+        editor.classList.remove('hidden');
+        tabEd.className = 'px-2.5 py-1 rounded bg-zinc-800 text-white';
+        tabPr.className = 'px-2.5 py-1 rounded text-zinc-400';
+      }
+    }
+
+    function reorderProject(id, dir) {
+      showAdminToast(`Project reordered (${dir}) — revalidatePath(/projects) triggered`, 'success');
+    }
+
+    function fillDemoCreds() {
+      document.getElementById('login-email').value = 'admin@olehidavis.dev';
+      document.getElementById('login-pwd').value = 'secure_admin_pass_2026';
+      showAdminToast('Demo credentials inserted', 'info');
+    }
+
+    function showAdminToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700/80 shadow-2xl text-xs text-zinc-100 font-sans transition-all duration-300 transform translate-y-4 opacity-0';
+      toast.innerHTML = `
+        <i data-lucide="${type === 'success' ? 'check-circle-2' : (type === 'warning' ? 'alert-triangle' : 'info')}" class="w-4 h-4 ${type === 'success' ? 'text-[var(--accent)]' : (type === 'warning' ? 'text-amber-400' : 'text-blue-400')}"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      lucide.createIcons({ root: toast });
+      requestAnimationFrame(() => toast.classList.remove('translate-y-4', 'opacity-0'));
+      setTimeout(() => {
+        toast.classList.add('translate-y-4', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Initial call
+    updateLiveMarkdownPreview();
+  <\/script>
+</body>
+</html>
+  </script>
+
+  <!-- ========================================================================= -->
+  <!-- PREVIEW SHELL CONTROLLER                                                  -->
+  <!-- ========================================================================= -->
+  <script>
+    lucide.createIcons();
+
+    let currentMode = 'desktop';
+    let currentTheme = 'dark';
+    let currentAccent = '#10B981';
+
+    const iframe = document.getElementById('preview-iframe');
+    const container = document.getElementById('frame-container');
+    const notch = document.getElementById('mobile-notch');
+    const desktopChrome = document.getElementById('desktop-chrome');
+    const viewportIndicator = document.getElementById('viewport-indicator');
+
+    function loadIframeContent() {
+      const template = document.getElementById('inner-html-template').innerHTML;
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(template);
+      doc.close();
+
+      setTimeout(() => {
+        applyThemeToIframe();
+        applyAccentToIframe();
+      }, 50);
+    }
+
+    function setViewportMode(mode) {
+      currentMode = mode;
+      
+      document.getElementById('btn-desktop').className = mode === 'desktop' 
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+      
+      document.getElementById('btn-mobile').className = mode === 'mobile'
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+
+      document.getElementById('btn-fluid').className = mode === 'fluid'
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+
+      if (mode === 'desktop') {
+        container.style.width = '1440px';
+        container.style.maxWidth = '100%';
+        container.style.height = '100%';
+        container.classList.remove('phone-bezel');
+        container.classList.add('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.remove('hidden');
+        notch.classList.add('hidden');
+        viewportIndicator.textContent = '1440 x 900';
+      } else if (mode === 'mobile') {
+        container.style.width = '390px';
+        container.style.maxWidth = '390px';
+        container.style.height = '844px';
+        container.classList.add('phone-bezel');
+        container.classList.remove('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.add('hidden');
+        notch.classList.remove('hidden');
+        viewportIndicator.textContent = '390 x 844 (iPhone)';
+      } else if (mode === 'fluid') {
+        container.style.width = '100%';
+        container.style.maxWidth = '100%';
+        container.style.height = '100%';
+        container.classList.remove('phone-bezel');
+        container.classList.add('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.remove('hidden');
+        notch.classList.add('hidden');
+        viewportIndicator.textContent = `${window.innerWidth} x ${window.innerHeight}`;
+      }
+    }
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      const root = document.documentElement;
+      const themeText = document.getElementById('theme-text');
+      const themeIcon = document.getElementById('theme-icon');
+
+      if (currentTheme === 'light') {
+        root.classList.remove('dark');
+        themeText.textContent = 'Light';
+        themeIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        root.classList.add('dark');
+        themeText.textContent = 'Dark';
+        themeIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+      applyThemeToIframe();
+    }
+
+    function applyThemeToIframe() {
+      try {
+        const idoc = iframe.contentDocument || iframe.contentWindow.document;
+        if (currentTheme === 'light') {
+          idoc.documentElement.classList.remove('dark');
+          idoc.documentElement.classList.add('light');
+        } else {
+          idoc.documentElement.classList.add('dark');
+          idoc.documentElement.classList.remove('light');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function setAccent(color) {
+      currentAccent = color;
+      document.documentElement.style.setProperty('--accent', color);
+      
+      document.querySelectorAll('.accent-swatch').forEach(btn => {
+        if (btn.getAttribute('data-color') === color) {
+          btn.classList.add('ring-white');
+        } else {
+          btn.classList.remove('ring-white');
+        }
+      });
+      applyAccentToIframe();
+    }
+
+    function applyAccentToIframe() {
+      try {
+        const idoc = iframe.contentDocument || iframe.contentWindow.document;
+        idoc.documentElement.style.setProperty('--accent', currentAccent);
+        idoc.documentElement.style.setProperty('--accent-muted', `${currentAccent}26`);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    loadIframeContent();
+    setViewportMode('desktop');
+    setAccent('#10B981');
+  </script>
+</body>
+</html>
