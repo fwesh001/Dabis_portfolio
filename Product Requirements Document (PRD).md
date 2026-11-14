@@ -311,28 +311,46 @@ src/
 
 ---
 
-## 6. Phased Implementation Plan for Antigravity
+## 6. Parallel Agent Execution & Design-First Workflow (`teamwork` Mode)
 
-Execute this build sequentially across 4 milestones and verify each in the browser preview:
+### CRITICAL EXECUTION RULE: DESIGN GATE BEFORE CODE
+Do NOT initialize the Next.js application or write production React/Supabase code in Stage 1. You must first execute **Stage 1 (Parallel UI/UX Mobile & Desktop Design Drafts)** and **STOP for human review and approval**.
 
-1. **Phase 1 — Foundation, Theme Engine & Typed Data Layer:**
-* Initialize Next.js (App Router, TypeScript, Tailwind CSS), install `lucide-react`, `next-themes`, `@supabase/supabase-js`, `@supabase/ssr`, `react-markdown`, `remark-gfm`, `rehype-pretty-code`, `shiki`, and `sonner`.
-* Configure `globals.css` with Light/Dark CSS variables, `--accent` token, and custom scrollbar rules.
-* Create `src/lib/types.ts`, `supabase/migrations/001_initial_schema.sql`, `src/lib/seed-data.ts` (populated with realistic senior engineering projects, career history, and 2 deep technical blog posts with code blocks), and `src/lib/queries.ts` (fetching from Supabase with seamless fallback to `seed-data.ts` when env vars are missing).
+---
 
+### Stage 1: Parallel UI/UX Design Drafting (Mobile `390px` & Desktop `1440px`)
+Spawn 4 parallel UI/UX Design Agents to create interactive, high-fidelity HTML + Tailwind CSS design prototypes inside `/design-drafts/`. Every draft must include a top preview bar to toggle **Dark / Light Mode**, switch **Accent Colors** (`#10B981`, `#3B82F6`, `#F59E0B`), and inspect **Desktop (`1440px`) and Mobile (`390px`) viewports**.
 
-2. **Phase 2 — Bespoke Shell & Public Portfolio Surface:**
-* Build `<CustomCursor/>`, `<CustomContextMenu/>`, `<CommandPalette/>`, and `<Navbar/>`.
-* Build the `/` homepage: `<HeroSection/>` with live availability pill and `<ResumeModal/>`, `<BentoGrid/>`, `<ProjectCard/>` grid, `<ExperienceTimeline/>`, `<SkillsMatrix/>`, and one-click copy-email footer.
-* Build `/projects/[slug]` for deep project architecture case studies.
+* **Agent 1 (Design System & Shell Architect) — Owns `/design-drafts/00-design-system.html`:**
+  * Defines shared CSS tokens (Zinc dark/light palettes, `--accent`, Geist Sans/Mono typography scales, spacing, border radii).
+  * Drafts the global shell for Desktop & Mobile: Sticky Navbar, Mobile Quick-Action Bottom Sheet, Desktop `⌘K` Command Palette, Custom Right-Click Context Menu, Custom Cursor states, and Custom Scrollbars.
+* **Agent 2 (Public Portfolio UI Designer) — Owns `/design-drafts/01-portfolio.html`:**
+  * **Desktop (`1440px`) & Mobile (`390px`) views** for: Hero Section (with live availability status pill & Resume PDF Preview Modal), 4-column-to-1-column Bento Grid, Filterable Projects Grid, Project Engineering Case-Study Drawer/View, Experience Timeline, Skills Matrix, and Copy-Email Footer.
+* **Agent 3 (Technical Blog UI Designer) — Owns `/design-drafts/02-blog.html`:**
+  * **Desktop (`1440px`) & Mobile (`390px`) views** for:
+    1. Blog Index (Search bar, tag filter pills, editorial post cards with read time).
+    2. Article Reader (Top reading progress bar, Desktop sticky right Table of Contents vs. Mobile collapsible top TOC accordion, Shiki-styled code blocks with filename header & copy button).
+* **Agent 4 (Admin CMS UI Designer) — Owns `/design-drafts/03-admin-cms.html`:**
+  * **Desktop (`1440px`) & Mobile (`390px`) views** for:
+    1. Admin Login screen.
+    2. Admin Dashboard (Collapsible sidebar on Desktop / bottom nav or drawer on Mobile).
+    3. Profile & Site Settings form + Drag-and-drop Image/Resume Uploader states (empty, uploading, uploaded).
+    4. Projects & Experience CRUD tables/cards with reorder controls.
+    5. Blog Studio (Desktop split-pane Markdown editor + live preview vs. Mobile `Write | Preview | Settings` tab switcher).
 
+> **🛑 GATE 1 — STOP FOR USER REVIEW:** Once `/design-drafts/00` through `03` are generated, open them in the preview browser and wait for explicit user approval or revision notes before proceeding to Stage 2.
 
-3. **Phase 3 — Technical Blog Engine & SEO:**
-* Build `/blog` with instant client search and tag filtering.
-* Build `/blog/[slug]` with `<ReadingProgress/>`, sticky `<TableOfContents/>`, and `<MarkdownRenderer/>` featuring syntax highlighting and one-click code copy buttons.
-* Add `sitemap.ts`, `robots.ts`, `opengraph-image.tsx`, and `/api/rss.xml`.
+---
 
+### Stage 2: Foundation Lock (Single Lead Agent — After Design Approval)
+Once designs are approved, a single Lead Agent initializes the repository so parallel coding agents do not collide on shared config files:
+* Initialize Next.js App Router + TypeScript + Tailwind CSS, `package.json`, `src/app/globals.css`, `src/lib/types.ts`, `src/lib/seed-data.ts`, and `supabase/migrations/001_initial_schema.sql`.
 
-4. **Phase 4 — Supabase Auth & Full Admin CMS:**
-* Build `/admin/login` and `src/middleware.ts` auth guard.
-* Build the `/admin` dashboard modules (Profile/Settings editor, Projects CRUD, Experience CRUD, Skills CRUD, and Split-Pane Blog Studio) wired to `src/lib/actions/admin-actions.ts` with `revalidatePath('/', 'layout')` on every mutation.
+---
+
+### Stage 3: Parallel Full-Stack Implementation (4 Concurrent Coding Agents)
+After Stage 2 locks the shared configs, run 4 parallel agents with strict file isolation:
+* **Agent A (Global Shell & Public Portfolio):** Owns `src/components/shell/*`, `src/components/portfolio/*`, `src/app/(public)/page.tsx`, and `src/app/(public)/projects/[slug]/page.tsx`.
+* **Agent B (Blog Engine & SEO):** Owns `src/components/blog/*`, `src/app/(public)/blog/*`, `src/app/sitemap.ts`, `src/app/robots.ts`, `src/app/opengraph-image.tsx`, and `src/app/api/rss.xml/route.ts`.
+* **Agent C (Supabase Data Layer, Auth & Server Actions):** Owns `src/lib/supabase/*`, `src/lib/queries.ts`, `src/lib/actions/admin-actions.ts`, and `src/middleware.ts`.
+* **Agent D (Admin CMS Dashboard):** Owns `src/components/admin/*` and `src/app/admin/*`.
