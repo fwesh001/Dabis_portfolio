@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Portfolio Prototype | Olehi Davis</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono for Geist fallback -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: 'var(--accent, #10B981)',
+            'accent-muted': 'var(--accent-muted, rgba(16, 185, 129, 0.15))',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --accent: #10B981;
+      --accent-muted: rgba(16, 185, 129, 0.15);
+    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #09090b; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+    /* Phone frame bezel */
+    .phone-bezel {
+      border: 12px solid #27272a;
+      border-radius: 44px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+    .phone-speaker {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 18px;
+      background: #09090b;
+      border-radius: 12px;
+      z-index: 40;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .phone-speaker::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      background: #18181b;
+      border-radius: 50%;
+      border: 2px solid #27272a;
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans antialiased overflow-hidden select-none">
+
+  <!-- ========================================================================= -->
+  <!-- UNIVERSAL PREVIEW BAR                                                     -->
+  <!-- ========================================================================= -->
+  <header class="h-14 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between z-50 flex-shrink-0 text-xs">
+    <!-- Left: Navigation between draft files -->
+    <div class="flex items-center space-x-1 sm:space-x-2">
+      <span class="font-mono text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mr-2 hidden md:inline">Drafts:</span>
+      <a href="00-design-system.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        00 Shell
+      </a>
+      <a href="01-portfolio.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors bg-zinc-800 text-white border border-zinc-700 flex items-center gap-1.5 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
+        <span>01 Portfolio</span>
+      </a>
+      <a href="02-blog.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        02 Blog
+      </a>
+      <a href="03-admin-cms.html" class="px-2.5 py-1.5 rounded-md font-mono font-medium transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60">
+        03 Admin
+      </a>
+    </div>
+
+    <!-- Center: Viewport Mode Switcher (Desktop 1440px vs Mobile 390px vs Fluid) -->
+    <div class="flex items-center bg-zinc-950/80 p-0.5 rounded-lg border border-zinc-800 shadow-inner">
+      <button id="btn-desktop" onclick="setViewportMode('desktop')" title="Desktop Viewport (1440px)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5">
+        <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">1440px</span>
+      </button>
+      <button id="btn-mobile" onclick="setViewportMode('mobile')" title="Mobile Viewport (390px - True iPhone Iframe)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5">
+        <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">390px</span>
+      </button>
+      <button id="btn-fluid" onclick="setViewportMode('fluid')" title="Full Browser Width (Responsive Fluid)" class="px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5">
+        <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Fluid</span>
+      </button>
+    </div>
+
+    <!-- Right: Theme & Accent Color Controls -->
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <!-- Accent Palette -->
+      <div class="flex items-center space-x-1.5 bg-zinc-950/80 px-2 py-1 rounded-lg border border-zinc-800">
+        <span class="text-[10px] font-mono text-zinc-500 mr-1 hidden lg:inline">ACCENT</span>
+        <button onclick="setAccent('#10B981')" title="Emerald (#10B981)" class="w-4 h-4 rounded-full bg-[#10B981] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch active-accent" data-color="#10B981"></button>
+        <button onclick="setAccent('#3B82F6')" title="Electric Blue (#3B82F6)" class="w-4 h-4 rounded-full bg-[#3B82F6] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch" data-color="#3B82F6"></button>
+        <button onclick="setAccent('#F59E0B')" title="Amber (#F59E0B)" class="w-4 h-4 rounded-full bg-[#F59E0B] ring-2 ring-transparent hover:scale-110 transition-transform focus:outline-none accent-swatch" data-color="#F59E0B"></button>
+        <input type="color" id="custom-accent" value="#10B981" onchange="setAccent(this.value)" title="Custom Accent" class="w-4 h-4 rounded-full opacity-0 absolute pointer-events-none">
+        <button onclick="document.getElementById('custom-accent').click()" title="Pick Custom Color" class="w-4 h-4 rounded-full border border-dashed border-zinc-500 flex items-center justify-center text-[9px] text-zinc-400 hover:text-zinc-200">
+          +
+        </button>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button id="theme-toggle-btn" onclick="toggleTheme()" class="px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950/80 hover:bg-zinc-800 text-zinc-300 transition-colors flex items-center gap-1.5 font-mono text-[11px]" title="Toggle Dark/Light Mode">
+        <i data-lucide="moon" class="w-3.5 h-3.5" id="theme-icon"></i>
+        <span id="theme-text" class="hidden sm:inline">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- VIEWPORT STAGE CANVAS                                                     -->
+  <!-- ========================================================================= -->
+  <main id="viewport-stage" class="flex-1 bg-zinc-950 bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:16px_16px] flex items-center justify-center p-2 sm:p-6 overflow-hidden">
+    <!-- Container -->
+    <div id="frame-container" class="w-full h-full max-w-[1440px] flex flex-col transition-all duration-300 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/60 shadow-2xl">
+      <!-- Browser faux header -->
+      <div id="desktop-chrome" class="h-9 bg-zinc-900 border-b border-zinc-800 px-3 flex items-center justify-between text-xs text-zinc-400 select-none flex-shrink-0">
+        <div class="flex items-center space-x-2">
+          <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+          <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+          <span class="ml-2 font-mono text-[11px] text-zinc-400">Olehi Davis — Senior Software Engineer</span>
+        </div>
+        <div class="bg-zinc-950/70 border border-zinc-800 rounded-md px-3 py-0.5 text-[11px] font-mono text-zinc-400 flex items-center gap-1.5 w-72 justify-center">
+          <i data-lucide="lock" class="w-2.5 h-2.5 text-[var(--accent)]"></i>
+          <span>https://olehidavis.dev/</span>
+        </div>
+        <div class="flex items-center space-x-2 text-[11px] font-mono text-zinc-500">
+          <span id="viewport-indicator">1440 x 900</span>
+        </div>
+      </div>
+
+      <!-- Phone notch/speaker (only shown in mobile mode) -->
+      <div id="mobile-notch" class="phone-speaker hidden"></div>
+
+      <!-- Real <iframe> for strict media-query isolation -->
+      <iframe id="preview-iframe" class="w-full flex-1 bg-zinc-950 border-0" src="about:blank"></iframe>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- INNER HTML SOURCE FOR 01-PORTFOLIO                                        -->
+  <!-- ========================================================================= -->
+  <script id="inner-html-template" type="text/template">
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Olehi Davis — Senior Software Engineer</title>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"><\/script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: 'var(--accent, #10B981)',
+            'accent-muted': 'var(--accent-muted, rgba(16, 185, 129, 0.15))',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  <\/script>
+  <style>
+    :root {
+      --accent: #10B981;
+      --accent-muted: rgba(16, 185, 129, 0.15);
+    }
+    html.dark {
+      background-color: #09090b;
+      color: #fafafa;
+    }
+    html:not(.dark) {
+      background-color: #fafafa;
+      color: #09090b;
+    }
+    html:not(.dark) .bg-zinc-950 { background-color: #fafafa; }
+    html:not(.dark) .bg-zinc-900 { background-color: #f4f4f5; }
+    html:not(.dark) .border-zinc-800 { border-color: #e4e4e7; }
+    html:not(.dark) .text-zinc-100, html:not(.dark) .text-white { color: #09090b; }
+    html:not(.dark) .text-zinc-400 { color: #52525b; }
+    html:not(.dark) .text-zinc-300 { color: #3f3f46; }
+    html:not(.dark) .text-zinc-500 { color: #71717a; }
+
+    /* Custom Cursor */
+    .cursor-dot {
+      pointer-events: none;
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+    }
+    .cursor-ring {
+      pointer-events: none;
+      position: fixed;
+      width: 28px;
+      height: 28px;
+      border: 1.5px solid var(--accent);
+      border-radius: 50%;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1), height 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+    }
+    .cursor-hover .cursor-ring {
+      width: 44px;
+      height: 44px;
+      background-color: var(--accent-muted);
+    }
+    @media (pointer: coarse) {
+      .cursor-dot, .cursor-ring { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-emerald-500/20 selection:text-emerald-300 relative pb-28 sm:pb-16">
+
+  <!-- Custom Cursor Elements -->
+  <div id="cursor-dot" class="cursor-dot"></div>
+  <div id="cursor-ring" class="cursor-ring"></div>
+
+  <!-- ========================================================================= -->
+  <!-- 1. STICKY MINIMAL NAVBAR                                                  -->
+  <!-- ========================================================================= -->
+  <nav class="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <!-- Monogram Logo -->
+      <a href="#hero" class="flex items-center space-x-3 group cursor-pointer">
+        <div class="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-700/80 flex items-center justify-center font-mono font-bold text-sm tracking-tight text-white group-hover:border-[var(--accent)] group-hover:text-[var(--accent)] transition-all shadow-sm">
+          OD
+        </div>
+        <div class="flex flex-col">
+          <span class="font-medium text-sm text-zinc-100 group-hover:text-white transition-colors">Olehi Davis</span>
+          <span class="text-[11px] font-mono text-zinc-500">Senior Software Engineer</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Items -->
+      <div class="hidden md:flex items-center space-x-6 text-sm text-zinc-400 font-medium">
+        <a href="#hero" class="hover:text-white transition-colors">Overview</a>
+        <a href="#bento" class="hover:text-white transition-colors">Architecture</a>
+        <a href="#projects" class="hover:text-white transition-colors">Projects</a>
+        <a href="#experience" class="hover:text-white transition-colors">Experience</a>
+        <a href="#skills" class="hover:text-white transition-colors">Stack</a>
+        <a href="02-blog.html" target="_parent" class="hover:text-[var(--accent)] transition-colors flex items-center gap-1 font-mono text-xs">
+          <span>Blog</span>
+          <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+        </a>
+      </div>
+
+      <!-- Right Actions: Command Palette Badge & Resume Button -->
+      <div class="flex items-center space-x-3">
+        <!-- ⌘K Trigger (Desktop) -->
+        <button onclick="toggleCommandPalette(true)" class="hidden sm:flex items-center space-x-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-zinc-200 px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all">
+          <i data-lucide="search" class="w-3.5 h-3.5"></i>
+          <kbd class="bg-zinc-800 px-1.5 py-0.5 rounded text-[10px] text-zinc-400 border border-zinc-700">⌘K</kbd>
+        </button>
+
+        <!-- Resume Modal Trigger -->
+        <button onclick="openResumeModal()" class="px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700/80 flex items-center gap-1.5 transition-colors">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+          <span>Resume</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN PAGE CONTAINER                                                       -->
+  <!-- ========================================================================= -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 space-y-24">
+
+    <!-- ======================================================================= -->
+    <!-- HERO SECTION                                                            -->
+    <!-- ======================================================================= -->
+    <section id="hero" class="space-y-6 pt-4">
+      <!-- Live Dynamic Status Pill -->
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-zinc-900/90 border border-zinc-800 text-xs font-mono text-zinc-300 shadow-sm">
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background-color: var(--accent);"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5" style="background-color: var(--accent);"></span>
+        </span>
+        <span>Available for senior roles &amp; distributed architecture consulting</span>
+      </div>
+
+      <!-- Headline -->
+      <div class="space-y-3">
+        <h1 class="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-tight">
+          Senior Software Engineer &mdash; Distributed Systems &amp; Modern Web Architecture
+        </h1>
+        <p class="text-base sm:text-xl text-zinc-400 max-w-3xl leading-relaxed">
+          I design and build resilient backend services, high-throughput distributed pipelines, and precision developer tools. Focused on performance, concurrency guarantees, and high-craft user experiences.
+        </p>
+      </div>
+
+      <!-- Location & Socials -->
+      <div class="flex flex-wrap items-center gap-4 text-xs font-mono text-zinc-400 pt-2">
+        <div class="flex items-center gap-1.5 bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-zinc-800">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+          <span>Nigeria &bull; Remote Worldwide</span>
+        </div>
+        <a href="https://github.com/18d-shady" target="_blank" class="flex items-center gap-1.5 bg-zinc-900/80 hover:bg-zinc-800 px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-white transition-colors">
+          <i data-lucide="github" class="w-3.5 h-3.5"></i>
+          <span>github/18d-shady</span>
+        </a>
+        <a href="https://linkedin.com" target="_blank" class="flex items-center gap-1.5 bg-zinc-900/80 hover:bg-zinc-800 px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-white transition-colors">
+          <i data-lucide="linkedin" class="w-3.5 h-3.5"></i>
+          <span>LinkedIn</span>
+        </a>
+        <button onclick="copyEmail()" class="flex items-center gap-1.5 bg-zinc-900/80 hover:bg-zinc-800 px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-white transition-colors">
+          <i data-lucide="mail" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+          <span>olehidavis@gmail.com</span>
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center gap-3 pt-4">
+        <a href="#projects" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-black flex items-center gap-2 shadow-lg hover:opacity-90 transition-all" style="background-color: var(--accent);">
+          <span>Explore Architecture</span>
+          <i data-lucide="arrow-down" class="w-4 h-4"></i>
+        </a>
+        <button onclick="openResumeModal()" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-700/80 flex items-center gap-2 transition-colors">
+          <i data-lucide="file-text" class="w-4 h-4 text-zinc-400"></i>
+          <span>View Interactive Resume</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- MODULAR BENTO GRID (4-column to 1-column)                                -->
+    <!-- ======================================================================= -->
+    <section id="bento" class="space-y-6">
+      <div class="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+        <div>
+          <span class="text-xs font-mono text-[var(--accent)]">01 // ARCHITECTURE &amp; HIGHLIGHTS</span>
+          <h2 class="text-2xl font-bold tracking-tight text-white mt-1">Engineering Radar &amp; Focus</h2>
+        </div>
+        <span class="text-xs font-mono text-zinc-500 hidden sm:inline">Modular Bento Grid</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Tile 1: Tech Stack Radar & Concurrency (2 cols on md) -->
+        <div class="md:col-span-2 p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-6 hover:border-zinc-700 transition-colors">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-zinc-400 flex items-center gap-2">
+                <i data-lucide="cpu" class="w-4 h-4 text-[var(--accent)]"></i> Core Architecture Stack
+              </span>
+              <span class="text-[10px] font-mono text-zinc-500">Production-Hardened</span>
+            </div>
+            <p class="text-sm text-zinc-300">
+              High-throughput asynchronous workloads, distributed caching tiers, and event streaming backbones.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Go / Golang (Concurrency)
+            </span>
+            <span class="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> TypeScript / Next.js
+            </span>
+            <span class="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> PostgreSQL (RLS &amp; Indices)
+            </span>
+            <span class="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Redis (Distributed Locks)
+            </span>
+            <span class="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span> Apache Kafka
+            </span>
+            <span class="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Docker / Kubernetes
+            </span>
+          </div>
+        </div>
+
+        <!-- Tile 2: Flagship Project Spotlight (2 cols on md) -->
+        <div class="md:col-span-2 p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-6 hover:border-zinc-700 transition-colors group">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-[var(--accent)] flex items-center gap-1.5">
+                <i data-lucide="zap" class="w-4 h-4"></i> Flagship Project
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-400">99.99% SLA</span>
+            </div>
+            <h3 class="text-xl font-bold text-white group-hover:text-[var(--accent)] transition-colors">HyperQueue &mdash; Distributed Task Engine</h3>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+              Fault-tolerant, exactly-once job execution queue written in Go, utilizing Raft consensus and PostgreSQL write-ahead logs with Redis pub/sub.
+            </p>
+          </div>
+          <div class="flex items-center justify-between pt-2">
+            <div class="text-[11px] font-mono text-zinc-400">
+              p99: <span class="text-white font-semibold">12.4ms</span> &bull; 45,000 msg/s
+            </div>
+            <button onclick="openCaseStudy('hyperqueue')" class="text-xs font-mono font-medium text-white group-hover:text-[var(--accent)] flex items-center gap-1">
+              <span>View Architecture</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tile 3: Latest Technical Article (2 cols on md) -->
+        <div class="md:col-span-2 p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-4 hover:border-zinc-700 transition-colors">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-zinc-400 flex items-center gap-1.5">
+                <i data-lucide="book-open" class="w-4 h-4 text-[var(--accent)]"></i> Latest Technical Article
+              </span>
+              <span class="text-[10px] font-mono text-zinc-500">8 min read</span>
+            </div>
+            <h4 class="text-base font-bold text-white">Building Distributed Idempotency Keys with Redis &amp; PostgreSQL</h4>
+            <p class="text-xs text-zinc-400">
+              Preventing double charges and duplicate mutations in asynchronous payment pipelines using atomic leases and transaction isolation.
+            </p>
+          </div>
+          <div class="flex items-center justify-between pt-2 text-xs font-mono">
+            <span class="text-zinc-500">2024.11.10</span>
+            <a href="02-blog.html" target="_parent" class="text-[var(--accent)] hover:underline flex items-center gap-1">
+              <span>Read Post</span>
+              <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Tile 4: Engineering Metrics & Direct Contact (2 cols on md) -->
+        <div class="md:col-span-2 p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-4 hover:border-zinc-700 transition-colors">
+          <div class="space-y-2">
+            <span class="text-xs font-mono text-zinc-400 flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-4 h-4 text-[var(--accent)]"></i> Verified Production Impact
+            </span>
+            <div class="grid grid-cols-3 gap-2 pt-2">
+              <div class="bg-zinc-950 p-2.5 rounded-lg border border-zinc-800 text-center">
+                <div class="text-lg font-bold text-white font-mono">7+</div>
+                <div class="text-[10px] font-mono text-zinc-500">Years Exp</div>
+              </div>
+              <div class="bg-zinc-950 p-2.5 rounded-lg border border-zinc-800 text-center">
+                <div class="text-lg font-bold text-white font-mono">&gt;1M</div>
+                <div class="text-[10px] font-mono text-zinc-500">Daily Events</div>
+              </div>
+              <div class="bg-zinc-950 p-2.5 rounded-lg border border-zinc-800 text-center">
+                <div class="text-lg font-bold text-emerald-400 font-mono">99.99%</div>
+                <div class="text-[10px] font-mono text-zinc-500">System Uptime</div>
+              </div>
+            </div>
+          </div>
+          <button onclick="copyEmail()" class="w-full py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-xs font-mono text-zinc-200 flex items-center justify-center gap-2 transition-all">
+            <i data-lucide="copy" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+            <span>Quick Copy: olehidavis@gmail.com</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- FEATURED PROJECTS GRID & CASE STUDIES                                   -->
+    <!-- ======================================================================= -->
+    <section id="projects" class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
+        <div>
+          <span class="text-xs font-mono text-[var(--accent)]">02 // SELECTED WORK</span>
+          <h2 class="text-2xl font-bold tracking-tight text-white mt-1">Featured Architecture Projects</h2>
+        </div>
+        <!-- Filter Pills -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs font-mono">
+          <button onclick="filterProjects('all')" class="project-filter-btn px-3 py-1.5 rounded-lg bg-zinc-800 text-white border border-zinc-700" data-filter="all">All</button>
+          <button onclick="filterProjects('distributed')" class="project-filter-btn px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white" data-filter="distributed">Distributed</button>
+          <button onclick="filterProjects('cloud')" class="project-filter-btn px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white" data-filter="cloud">Cloud / Infra</button>
+          <button onclick="filterProjects('web')" class="project-filter-btn px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white" data-filter="web">Web Architecture</button>
+        </div>
+      </div>
+
+      <!-- Projects Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Project 1 -->
+        <div class="project-card p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-6 hover:border-zinc-700 transition-all" data-category="distributed">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono text-[var(--accent)]">Distributed Systems</span>
+              <span class="text-[10px] font-mono text-zinc-500 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">Featured</span>
+            </div>
+            <h3 class="text-xl font-bold text-white">HyperQueue &mdash; Distributed Task Engine</h3>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+              High-throughput task queue engine with exactly-once delivery semantics, horizontal worker scaling, and dead-letter queue recovery.
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">Go</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">Raft</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">PostgreSQL</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">Redis</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-4 border-t border-zinc-800/60">
+            <div class="flex items-center space-x-3 text-xs font-mono text-zinc-400">
+              <a href="https://github.com/18d-shady" target="_blank" class="hover:text-white flex items-center gap-1">
+                <i data-lucide="github" class="w-3.5 h-3.5"></i> Repo
+              </a>
+              <a href="#" class="hover:text-white flex items-center gap-1">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live API
+              </a>
+            </div>
+            <button onclick="openCaseStudy('hyperqueue')" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-mono font-medium text-white border border-zinc-700/80 flex items-center gap-1.5 transition-colors">
+              <span>Deep Case Study</span>
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project-card p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-6 hover:border-zinc-700 transition-all" data-category="cloud">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono text-[var(--accent)]">Cloud / Infra</span>
+              <span class="text-[10px] font-mono text-zinc-500 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">Observability</span>
+            </div>
+            <h3 class="text-xl font-bold text-white">Vanguard &mdash; Zero-Trust API Gateway</h3>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+              Lightweight reverse-proxy gateway implementing dynamic JWT verification, distributed rate limiting with sliding windows, and distributed tracing.
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">Go</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">Docker</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">eBPF</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">OpenTelemetry</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-4 border-t border-zinc-800/60">
+            <div class="flex items-center space-x-3 text-xs font-mono text-zinc-400">
+              <a href="https://github.com/18d-shady" target="_blank" class="hover:text-white flex items-center gap-1">
+                <i data-lucide="github" class="w-3.5 h-3.5"></i> Repo
+              </a>
+            </div>
+            <button onclick="openCaseStudy('vanguard')" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-mono font-medium text-white border border-zinc-700/80 flex items-center gap-1.5 transition-colors">
+              <span>Deep Case Study</span>
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="project-card p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-6 hover:border-zinc-700 transition-all" data-category="distributed">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono text-[var(--accent)]">Distributed Systems</span>
+              <span class="text-[10px] font-mono text-zinc-500 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">Real-Time</span>
+            </div>
+            <h3 class="text-xl font-bold text-white">Pulse &mdash; Time-Series Metrics Broker</h3>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+              Asynchronous metrics aggregator capable of buffering 250,000 telemetry datapoints per second with automated partition compaction.
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">Kafka</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">Go</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">TimescaleDB</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-4 border-t border-zinc-800/60">
+            <div class="flex items-center space-x-3 text-xs font-mono text-zinc-400">
+              <a href="https://github.com/18d-shady" target="_blank" class="hover:text-white flex items-center gap-1">
+                <i data-lucide="github" class="w-3.5 h-3.5"></i> Repo
+              </a>
+            </div>
+            <button onclick="openCaseStudy('pulse')" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-mono font-medium text-white border border-zinc-700/80 flex items-center gap-1.5 transition-colors">
+              <span>Deep Case Study</span>
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Project 4 -->
+        <div class="project-card p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-6 hover:border-zinc-700 transition-all" data-category="web">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono text-[var(--accent)]">Web Architecture</span>
+              <span class="text-[10px] font-mono text-zinc-500 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">Edge SSR</span>
+            </div>
+            <h3 class="text-xl font-bold text-white">Prism &mdash; Headless Publishing Engine</h3>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+              Senior engineering blog &amp; content engine featuring Next.js Server Components, on-demand revalidation, and Supabase RLS security.
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">Next.js 15</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">TypeScript</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">Supabase</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">Tailwind</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-4 border-t border-zinc-800/60">
+            <div class="flex items-center space-x-3 text-xs font-mono text-zinc-400">
+              <a href="https://github.com/18d-shady" target="_blank" class="hover:text-white flex items-center gap-1">
+                <i data-lucide="github" class="w-3.5 h-3.5"></i> Repo
+              </a>
+            </div>
+            <button onclick="openCaseStudy('prism')" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-mono font-medium text-white border border-zinc-700/80 flex items-center gap-1.5 transition-colors">
+              <span>Deep Case Study</span>
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- EXPERIENCE TIMELINE                                                     -->
+    <!-- ======================================================================= -->
+    <section id="experience" class="space-y-6">
+      <div class="border-b border-zinc-800/80 pb-4">
+        <span class="text-xs font-mono text-[var(--accent)]">03 // TRACK RECORD</span>
+        <h2 class="text-2xl font-bold tracking-tight text-white mt-1">Engineering Experience</h2>
+      </div>
+
+      <div class="space-y-8 relative before:absolute before:inset-0 before:left-3 sm:before:left-4 before:w-0.5 before:bg-zinc-800">
+        <!-- Role 1 -->
+        <div class="relative pl-8 sm:pl-10 space-y-2">
+          <div class="absolute left-1.5 sm:left-2.5 top-1.5 w-3 h-3 rounded-full bg-[var(--accent)] ring-4 ring-zinc-950"></div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+            <h3 class="text-base font-bold text-white">Lead Distributed Systems Engineer</h3>
+            <span class="text-xs font-mono text-zinc-400">2022 &mdash; Present</span>
+          </div>
+          <div class="text-xs font-mono text-[var(--accent)]">Apex Distributed Labs &bull; Remote</div>
+          <ul class="text-xs text-zinc-400 space-y-1.5 pt-1 list-disc list-outside pl-4 leading-relaxed">
+            <li>Architected event streaming data pipelines processing 45k ops/sec with guaranteed at-least-once delivery.</li>
+            <li>Reduced cloud database expenditures by 48% via Redis caching tier and connection pool optimization in Go.</li>
+            <li>Mentored a team of 6 engineers across concurrency best practices, distributed tracing, and CI/CD automation.</li>
+          </ul>
+        </div>
+
+        <!-- Role 2 -->
+        <div class="relative pl-8 sm:pl-10 space-y-2">
+          <div class="absolute left-1.5 sm:left-2.5 top-1.5 w-3 h-3 rounded-full bg-zinc-600 ring-4 ring-zinc-950"></div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+            <h3 class="text-base font-bold text-white">Senior Backend &amp; Platform Engineer</h3>
+            <span class="text-xs font-mono text-zinc-400">2020 &mdash; 2022</span>
+          </div>
+          <div class="text-xs font-mono text-zinc-400">CloudMatrix Infrastructure &bull; Contract</div>
+          <ul class="text-xs text-zinc-400 space-y-1.5 pt-1 list-disc list-outside pl-4 leading-relaxed">
+            <li>Implemented zero-trust authentication service securing 30+ internal microservices using mTLS and JWTs.</li>
+            <li>Engineered automated database failover using PostgreSQL streaming replication, reducing recovery time by 90%.</li>
+            <li>Containerized legacy monoliths into Kubernetes deployments with zero-downtime rolling updates.</li>
+          </ul>
+        </div>
+
+        <!-- Role 3 -->
+        <div class="relative pl-8 sm:pl-10 space-y-2">
+          <div class="absolute left-1.5 sm:left-2.5 top-1.5 w-3 h-3 rounded-full bg-zinc-600 ring-4 ring-zinc-950"></div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+            <h3 class="text-base font-bold text-white">Full-Stack Software Engineer</h3>
+            <span class="text-xs font-mono text-zinc-400">2018 &mdash; 2020</span>
+          </div>
+          <div class="text-xs font-mono text-zinc-400">Veloce Solutions</div>
+          <ul class="text-xs text-zinc-400 space-y-1.5 pt-1 list-disc list-outside pl-4 leading-relaxed">
+            <li>Built high-reliability payment processing gateways and real-time customer analytics dashboards.</li>
+            <li>Developed reusable React/TypeScript component systems and backend REST APIs with 99.9% test coverage.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- CATEGORIZED SKILLS MATRIX                                               -->
+    <!-- ======================================================================= -->
+    <section id="skills" class="space-y-6">
+      <div class="border-b border-zinc-800/80 pb-4">
+        <span class="text-xs font-mono text-[var(--accent)]">04 // PROFICIENCIES</span>
+        <h2 class="text-2xl font-bold tracking-tight text-white mt-1">Technical Skills Matrix</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Group 1 -->
+        <div class="p-5 rounded-2xl bg-zinc-900/40 border border-zinc-800 space-y-3">
+          <div class="text-xs font-mono font-semibold text-zinc-300 flex items-center gap-2">
+            <i data-lucide="code" class="w-4 h-4 text-[var(--accent)]"></i> Languages
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Go</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">TypeScript</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Python</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">SQL</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-400">Rust (Basic)</span>
+          </div>
+        </div>
+
+        <!-- Group 2 -->
+        <div class="p-5 rounded-2xl bg-zinc-900/40 border border-zinc-800 space-y-3">
+          <div class="text-xs font-mono font-semibold text-zinc-300 flex items-center gap-2">
+            <i data-lucide="database" class="w-4 h-4 text-[var(--accent)]"></i> Distributed Systems
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">PostgreSQL</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Redis</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Apache Kafka</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">gRPC</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Raft</span>
+          </div>
+        </div>
+
+        <!-- Group 3 -->
+        <div class="p-5 rounded-2xl bg-zinc-900/40 border border-zinc-800 space-y-3">
+          <div class="text-xs font-mono font-semibold text-zinc-300 flex items-center gap-2">
+            <i data-lucide="cloud" class="w-4 h-4 text-[var(--accent)]"></i> Cloud &amp; DevOps
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Docker</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Kubernetes</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">AWS (ECS, S3)</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Terraform</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">GitHub Actions</span>
+          </div>
+        </div>
+
+        <!-- Group 4 -->
+        <div class="p-5 rounded-2xl bg-zinc-900/40 border border-zinc-800 space-y-3">
+          <div class="text-xs font-mono font-semibold text-zinc-300 flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4 text-[var(--accent)]"></i> Web &amp; Frontend
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Next.js 15</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">React</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Tailwind CSS</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Supabase</span>
+            <span class="px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">Server Actions</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- ZERO-FRICTION CONTACT FOOTER                                            -->
+    <!-- ======================================================================= -->
+    <footer id="contact" class="border-t border-zinc-800/80 pt-12 pb-16 space-y-8">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="space-y-2">
+          <div class="inline-flex items-center gap-2 text-xs font-mono text-[var(--accent)]">
+            <span class="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
+            <span>05 // INITIATE TRANSMISSION</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white">Let&apos;s build resilient systems.</h2>
+          <p class="text-xs text-zinc-400 max-w-md">
+            Open to senior engineering opportunities, distributed system consulting, and cloud performance auditing.
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <button onclick="copyEmail()" class="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-xs font-mono text-zinc-100 flex items-center gap-2 transition-all group shadow-sm">
+            <i data-lucide="copy" class="w-4 h-4 text-[var(--accent)] group-hover:scale-110 transition-transform"></i>
+            <span id="copy-email-text">olehidavis@gmail.com</span>
+          </button>
+          <a href="mailto:olehidavis@gmail.com" class="px-4 py-2.5 rounded-xl text-xs font-mono font-semibold text-black flex items-center gap-1.5 shadow-md hover:opacity-90 transition-all" style="background-color: var(--accent);">
+            <span>Send Email</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-zinc-800/60 text-xs font-mono text-zinc-500">
+        <div>&copy; 2026 Olehi Davis &bull; Senior Software Engineer</div>
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-1.5">
+            <i data-lucide="clock" class="w-3 h-3 text-[var(--accent)]"></i>
+            <span id="live-local-time">WAT --:--:--</span>
+          </span>
+          <span>Nigeria &bull; Remote Worldwide</span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MOBILE QUICK ACTIONS FLOATING TRIGGER & BOTTOM SHEET                      -->
+  <!-- ========================================================================= -->
+  <!-- Floating bottom trigger (visible on mobile / narrow viewports) -->
+  <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 md:hidden">
+    <button onclick="toggleBottomSheet(true)" class="px-4 py-2.5 rounded-full bg-zinc-900/95 backdrop-blur-md border border-zinc-700/80 shadow-2xl text-xs font-mono text-zinc-100 flex items-center gap-2 active:scale-95 transition-transform ring-1 ring-white/10">
+      <i data-lucide="zap" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+      <span>Quick Actions</span>
+      <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse"></span>
+    </button>
+  </div>
+
+  <!-- Mobile Bottom Sheet Backdrop & Drawer -->
+  <div id="mobile-sheet-backdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden transition-opacity" onclick="toggleBottomSheet(false)">
+    <div id="mobile-sheet-content" class="fixed bottom-0 left-0 right-0 max-h-[85vh] bg-zinc-950 border-t border-zinc-800 rounded-t-2xl p-5 space-y-4 shadow-2xl overflow-y-auto" onclick="event.stopPropagation()">
+      <!-- Handle bar -->
+      <div class="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mb-2"></div>
+      
+      <div class="flex items-center justify-between pb-2 border-b border-zinc-800">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded bg-zinc-900 border border-zinc-700 flex items-center justify-center font-mono font-bold text-xs text-[var(--accent)]">OD</div>
+          <div>
+            <div class="text-xs font-bold text-white">Olehi Davis</div>
+            <div class="text-[10px] font-mono text-zinc-500">Mobile Navigation &amp; Actions</div>
+          </div>
+        </div>
+        <button onclick="toggleBottomSheet(false)" class="p-1.5 rounded-lg text-zinc-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Action Grid -->
+      <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+        <button onclick="copyEmail(); toggleBottomSheet(false);" class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-left flex flex-col gap-1.5 hover:border-zinc-700">
+          <i data-lucide="copy" class="w-4 h-4 text-[var(--accent)]"></i>
+          <span class="text-zinc-200">Copy Email</span>
+        </button>
+        <button onclick="openResumeModal(); toggleBottomSheet(false);" class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-left flex flex-col gap-1.5 hover:border-zinc-700">
+          <i data-lucide="file-text" class="w-4 h-4 text-blue-400"></i>
+          <span class="text-zinc-200">View Resume</span>
+        </button>
+        <button onclick="copyPageUrl(); toggleBottomSheet(false);" class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-left flex flex-col gap-1.5 hover:border-zinc-700">
+          <i data-lucide="link" class="w-4 h-4 text-purple-400"></i>
+          <span class="text-zinc-200">Copy URL</span>
+        </button>
+        <button onclick="window.parent.toggleTheme(); toggleBottomSheet(false);" class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-left flex flex-col gap-1.5 hover:border-zinc-700">
+          <i data-lucide="sun-moon" class="w-4 h-4 text-amber-400"></i>
+          <span class="text-zinc-200">Toggle Theme</span>
+        </button>
+      </div>
+
+      <!-- Section Navigation Links -->
+      <div class="space-y-1 pt-2">
+        <div class="text-[10px] font-mono text-zinc-500 uppercase px-1">Jump to Section</div>
+        <a href="#hero" onclick="toggleBottomSheet(false)" class="block px-3 py-2 rounded-lg hover:bg-zinc-900 text-xs text-zinc-300">00 // Overview &amp; Bio</a>
+        <a href="#bento" onclick="toggleBottomSheet(false)" class="block px-3 py-2 rounded-lg hover:bg-zinc-900 text-xs text-zinc-300">01 // Architecture Bento</a>
+        <a href="#projects" onclick="toggleBottomSheet(false)" class="block px-3 py-2 rounded-lg hover:bg-zinc-900 text-xs text-zinc-300">02 // Featured Projects</a>
+        <a href="#experience" onclick="toggleBottomSheet(false)" class="block px-3 py-2 rounded-lg hover:bg-zinc-900 text-xs text-zinc-300">03 // Track Record</a>
+        <a href="#skills" onclick="toggleBottomSheet(false)" class="block px-3 py-2 rounded-lg hover:bg-zinc-900 text-xs text-zinc-300">04 // Skills Matrix</a>
+        <a href="02-blog.html" target="_parent" class="block px-3 py-2 rounded-lg hover:bg-zinc-900 text-xs text-[var(--accent)] font-medium">05 // Technical Blog &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PROJECT CASE STUDY DRAWER                                                 -->
+  <!-- ========================================================================= -->
+  <div id="case-study-backdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden transition-opacity" onclick="closeCaseStudy()">
+    <div id="case-study-panel" class="fixed top-0 right-0 bottom-0 w-full max-w-2xl bg-zinc-950 border-l border-zinc-800 shadow-2xl p-6 sm:p-8 space-y-6 overflow-y-auto transform translate-x-full transition-transform duration-300" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+        <div>
+          <span class="text-xs font-mono text-[var(--accent)]">ENGINEERING CASE STUDY</span>
+          <h2 id="cs-title" class="text-2xl font-bold text-white mt-1">HyperQueue Architecture</h2>
+        </div>
+        <button onclick="closeCaseStudy()" class="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-6 text-xs text-zinc-300 leading-relaxed font-sans">
+        <!-- Problem -->
+        <div class="space-y-2">
+          <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+            <span class="text-[var(--accent)]">01 //</span> Problem Statement
+          </h3>
+          <p class="text-zinc-400" id="cs-problem">
+            Existing message broker instances suffered from duplicate message deliveries during network partitions, causing payment processing race conditions under 30k req/sec peak spikes.
+          </p>
+        </div>
+
+        <!-- System Architecture Visual Diagram -->
+        <div class="space-y-2">
+          <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+            <span class="text-[var(--accent)]">02 //</span> System Architecture Flow
+          </h3>
+          <div class="p-4 rounded-xl bg-zinc-900 border border-zinc-800 font-mono text-[11px] text-zinc-300 space-y-2 overflow-x-auto">
+            <div class="text-[var(--accent)] font-bold">[Client Request] &rarr; [API Gateway (Vanguard)]</div>
+            <div class="pl-4 text-zinc-400">&darr; (Atomic Idempotency Key Check in Redis)</div>
+            <div class="text-white font-bold">[HyperQueue Raft Coordinator Cluster]</div>
+            <div class="pl-4 text-zinc-400">&darr; (Write-Ahead Append Log in PostgreSQL)</div>
+            <div class="text-emerald-400 font-bold">[Worker Pool (Go Goroutines)] &rarr; [ACK &amp; State Mutation]</div>
+          </div>
+        </div>
+
+        <!-- Trade-offs -->
+        <div class="space-y-2">
+          <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+            <span class="text-[var(--accent)]">03 //</span> Key Technical Trade-offs
+          </h3>
+          <ul class="space-y-1.5 text-zinc-400 list-disc pl-4" id="cs-tradeoffs">
+            <li><strong>Consistency vs Latency:</strong> Opted for strict Raft consensus quorum over eventual consistency, trading ~4ms of write latency for zero ghost task executions.</li>
+            <li><strong>Memory vs Durability:</strong> In-memory Redis sliding windows cache task states while PostgreSQL WAL guarantees crash recovery without state loss.</li>
+          </ul>
+        </div>
+
+        <!-- Measurable Results -->
+        <div class="space-y-2">
+          <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+            <span class="text-[var(--accent)]">04 //</span> Quantifiable Results
+          </h3>
+          <div class="grid grid-cols-3 gap-2 pt-1 font-mono text-center">
+            <div class="p-3 rounded-lg bg-zinc-900 border border-zinc-800">
+              <div class="text-base font-bold text-emerald-400">4.8x</div>
+              <div class="text-[10px] text-zinc-500">Throughput Gain</div>
+            </div>
+            <div class="p-3 rounded-lg bg-zinc-900 border border-zinc-800">
+              <div class="text-base font-bold text-white">0</div>
+              <div class="text-[10px] text-zinc-500">Duplicate Tasks</div>
+            </div>
+            <div class="p-3 rounded-lg bg-zinc-900 border border-zinc-800">
+              <div class="text-base font-bold text-white">-65%</div>
+              <div class="text-[10px] text-zinc-500">AWS Infrastructure Cost</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- INTERACTIVE RESUME PREVIEW MODAL                                          -->
+  <!-- ========================================================================= -->
+  <div id="resume-modal-backdrop" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4" onclick="closeResumeModal()">
+    <div class="w-full max-w-3xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+      <div class="px-5 py-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/50">
+        <div class="flex items-center gap-2">
+          <i data-lucide="file-text" class="w-4 h-4 text-[var(--accent)]"></i>
+          <span class="text-sm font-bold text-white">Olehi Davis &mdash; Senior Software Engineer Resume</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="downloadResume()" class="px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-black flex items-center gap-1.5" style="background-color: var(--accent);">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Download PDF</span>
+          </button>
+          <button onclick="closeResumeModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Resume document preview body -->
+      <div class="p-6 sm:p-8 overflow-y-auto space-y-6 text-xs text-zinc-300 font-sans">
+        <div class="border-b border-zinc-800 pb-4">
+          <h1 class="text-2xl font-bold text-white">OLEHI DAVIS</h1>
+          <div class="text-xs font-mono text-[var(--accent)]">Senior Software Engineer &bull; Distributed Systems Architecture</div>
+          <div class="text-zinc-500 text-[11px] font-mono mt-1">Nigeria &bull; Remote Worldwide &bull; olehidavis@gmail.com &bull; github.com/18d-shady</div>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="font-bold text-white font-mono text-xs uppercase tracking-wider text-[var(--accent)]">Summary</h3>
+          <p class="text-zinc-400 leading-relaxed">
+            Senior Software Engineer with 7+ years of experience engineering high-concurrency distributed systems, resilient microservice architectures, and modern web applications. Proven track record in scaling messaging infrastructure, reducing cloud operational costs, and establishing robust developer tooling.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="font-bold text-white font-mono text-xs uppercase tracking-wider text-[var(--accent)]">Core Competencies</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-[11px]">
+            <div class="p-2 rounded bg-zinc-900 border border-zinc-800">Distributed Consensus (Raft)</div>
+            <div class="p-2 rounded bg-zinc-900 border border-zinc-800">Concurrency in Go</div>
+            <div class="p-2 rounded bg-zinc-900 border border-zinc-800">PostgreSQL Optimization</div>
+            <div class="p-2 rounded bg-zinc-900 border border-zinc-800">Next.js &amp; TypeScript</div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="font-bold text-white font-mono text-xs uppercase tracking-wider text-[var(--accent)]">Selected Experience Highlights</h3>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between font-bold text-white">
+                <span>Apex Distributed Labs &mdash; Lead Distributed Systems Engineer</span>
+                <span class="font-mono text-zinc-500">2022 &mdash; Present</span>
+              </div>
+              <ul class="list-disc pl-4 text-zinc-400 space-y-1 mt-1">
+                <li>Scaled event streaming to 45k ops/sec with zero task loss during network partitions.</li>
+                <li>Reduced annual AWS RDS spending by $42,000 via connection multiplexing and Redis cache layers.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Scripts -->
+  <script>
+    lucide.createIcons();
+
+    // Cursor
+    const dot = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+    let mouseX = -100, mouseY = -100, ringX = -100, ringY = -100;
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX; mouseY = e.clientY;
+      dot.style.left = `${mouseX}px`; dot.style.top = `${mouseY}px`;
+    });
+    function animateCursor() {
+      ringX += (mouseX - ringX) * 0.18; ringY += (mouseY - ringY) * 0.18;
+      ring.style.left = `${ringX}px`; ring.style.top = `${ringY}px`;
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+    });
+
+    // Live Local Time in WAT (UTC+1)
+    function updateLocalTime() {
+      const now = new Date();
+      const options = { timeZone: 'Africa/Lagos', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+      const timeStr = new Intl.DateTimeFormat([], options).format(now);
+      const el = document.getElementById('live-local-time');
+      if (el) el.textContent = `WAT ${timeStr}`;
+    }
+    setInterval(updateLocalTime, 1000);
+    updateLocalTime();
+
+    // Copy Email
+    function copyEmail() {
+      navigator.clipboard.writeText('olehidavis@gmail.com').then(() => {
+        showToast('Email copied to clipboard (olehidavis@gmail.com)!', 'success');
+      });
+    }
+
+    function copyPageUrl() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        showToast('Portfolio URL copied to clipboard!', 'info');
+      });
+    }
+
+    // Toast
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700/80 shadow-2xl text-xs text-zinc-100 font-sans transition-all duration-300 transform translate-y-4 opacity-0';
+      toast.innerHTML = `
+        <i data-lucide="${type === 'success' ? 'check-circle-2' : 'info'}" class="w-4 h-4 ${type === 'success' ? 'text-[var(--accent)]' : 'text-blue-400'}"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      lucide.createIcons({ root: toast });
+      requestAnimationFrame(() => toast.classList.remove('translate-y-4', 'opacity-0'));
+      setTimeout(() => {
+        toast.classList.add('translate-y-4', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Projects Filtering
+    function filterProjects(category) {
+      document.querySelectorAll('.project-filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-filter') === category) {
+          btn.className = 'project-filter-btn px-3 py-1.5 rounded-lg bg-zinc-800 text-white border border-zinc-700';
+        } else {
+          btn.className = 'project-filter-btn px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white';
+        }
+      });
+      document.querySelectorAll('.project-card').forEach(card => {
+        if (category === 'all' || card.getAttribute('data-category') === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Case Study Drawer
+    function openCaseStudy(projectId) {
+      const backdrop = document.getElementById('case-study-backdrop');
+      const panel = document.getElementById('case-study-panel');
+      backdrop.classList.remove('hidden');
+      setTimeout(() => panel.classList.remove('translate-x-full'), 20);
+    }
+    function closeCaseStudy() {
+      const backdrop = document.getElementById('case-study-backdrop');
+      const panel = document.getElementById('case-study-panel');
+      panel.classList.add('translate-x-full');
+      setTimeout(() => backdrop.classList.add('hidden'), 300);
+    }
+
+    // Resume Modal
+    function openResumeModal() {
+      document.getElementById('resume-modal-backdrop').classList.remove('hidden');
+    }
+    function closeResumeModal() {
+      document.getElementById('resume-modal-backdrop').classList.add('hidden');
+    }
+    function downloadResume() {
+      showToast('Downloading Olehi_Davis_Senior_Engineer_CV.pdf...', 'info');
+    }
+
+    // Mobile Bottom Sheet
+    function toggleBottomSheet(open) {
+      const sheet = document.getElementById('mobile-sheet-backdrop');
+      if (open) {
+        sheet.classList.remove('hidden');
+      } else {
+        sheet.classList.add('hidden');
+      }
+    }
+  <\/script>
+</body>
+</html>
+  </script>
+
+  <!-- ========================================================================= -->
+  <!-- PREVIEW SHELL CONTROLLER                                                  -->
+  <!-- ========================================================================= -->
+  <script>
+    lucide.createIcons();
+
+    let currentMode = 'desktop';
+    let currentTheme = 'dark';
+    let currentAccent = '#10B981';
+
+    const iframe = document.getElementById('preview-iframe');
+    const container = document.getElementById('frame-container');
+    const notch = document.getElementById('mobile-notch');
+    const desktopChrome = document.getElementById('desktop-chrome');
+    const viewportIndicator = document.getElementById('viewport-indicator');
+
+    function loadIframeContent() {
+      const template = document.getElementById('inner-html-template').innerHTML;
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(template);
+      doc.close();
+
+      setTimeout(() => {
+        applyThemeToIframe();
+        applyAccentToIframe();
+      }, 50);
+    }
+
+    function setViewportMode(mode) {
+      currentMode = mode;
+      
+      document.getElementById('btn-desktop').className = mode === 'desktop' 
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+      
+      document.getElementById('btn-mobile').className = mode === 'mobile'
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+
+      document.getElementById('btn-fluid').className = mode === 'fluid'
+        ? 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-white bg-zinc-800 shadow-sm flex items-center gap-1.5'
+        : 'px-2.5 py-1 rounded-md font-mono font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5';
+
+      if (mode === 'desktop') {
+        container.style.width = '1440px';
+        container.style.maxWidth = '100%';
+        container.style.height = '100%';
+        container.classList.remove('phone-bezel');
+        container.classList.add('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.remove('hidden');
+        notch.classList.add('hidden');
+        viewportIndicator.textContent = '1440 x 900';
+      } else if (mode === 'mobile') {
+        container.style.width = '390px';
+        container.style.maxWidth = '390px';
+        container.style.height = '844px';
+        container.classList.add('phone-bezel');
+        container.classList.remove('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.add('hidden');
+        notch.classList.remove('hidden');
+        viewportIndicator.textContent = '390 x 844 (iPhone)';
+      } else if (mode === 'fluid') {
+        container.style.width = '100%';
+        container.style.maxWidth = '100%';
+        container.style.height = '100%';
+        container.classList.remove('phone-bezel');
+        container.classList.add('rounded-xl', 'border', 'border-zinc-800');
+        desktopChrome.classList.remove('hidden');
+        notch.classList.add('hidden');
+        viewportIndicator.textContent = `${window.innerWidth} x ${window.innerHeight}`;
+      }
+    }
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      const root = document.documentElement;
+      const themeText = document.getElementById('theme-text');
+      const themeIcon = document.getElementById('theme-icon');
+
+      if (currentTheme === 'light') {
+        root.classList.remove('dark');
+        themeText.textContent = 'Light';
+        themeIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        root.classList.add('dark');
+        themeText.textContent = 'Dark';
+        themeIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+      applyThemeToIframe();
+    }
+
+    function applyThemeToIframe() {
+      try {
+        const idoc = iframe.contentDocument || iframe.contentWindow.document;
+        if (currentTheme === 'light') {
+          idoc.documentElement.classList.remove('dark');
+          idoc.documentElement.classList.add('light');
+        } else {
+          idoc.documentElement.classList.add('dark');
+          idoc.documentElement.classList.remove('light');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function setAccent(color) {
+      currentAccent = color;
+      document.documentElement.style.setProperty('--accent', color);
+      
+      document.querySelectorAll('.accent-swatch').forEach(btn => {
+        if (btn.getAttribute('data-color') === color) {
+          btn.classList.add('ring-white');
+        } else {
+          btn.classList.remove('ring-white');
+        }
+      });
+      applyAccentToIframe();
+    }
+
+    function applyAccentToIframe() {
+      try {
+        const idoc = iframe.contentDocument || iframe.contentWindow.document;
+        idoc.documentElement.style.setProperty('--accent', currentAccent);
+        idoc.documentElement.style.setProperty('--accent-muted', `${currentAccent}26`);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    loadIframeContent();
+    setViewportMode('desktop');
+    setAccent('#10B981');
+  </script>
+</body>
+</html>
