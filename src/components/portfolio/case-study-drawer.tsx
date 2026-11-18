@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { X, ExternalLink, Github } from 'lucide-react';
+import { ExpandableImage } from '@/components/ui/image-lightbox';
 import type { Project } from '@/lib/types';
 
 interface CaseStudyDrawerProps {
@@ -65,13 +66,12 @@ export function CaseStudyDrawer({ project, onClose }: CaseStudyDrawerProps) {
 
         {/* Cover Screenshot */}
         {project.cover_image && (
-          <div className="w-full rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 shadow-sm">
-            <img
-              src={project.cover_image}
-              alt={project.title}
-              className="w-full max-h-72 object-cover"
-            />
-          </div>
+          <ExpandableImage
+            src={project.cover_image}
+            alt={project.title}
+            containerClassName="w-full rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 shadow-sm"
+            className="w-full max-h-72 object-cover"
+          />
         )}
 
         {/* Tech Stack Pills & Links */}
@@ -175,6 +175,16 @@ export function CaseStudyDrawer({ project, onClose }: CaseStudyDrawerProps) {
                     {children}
                   </a>
                 ),
+                img: ({ src, alt }) =>
+                  typeof src === 'string' && src ? (
+                    <ExpandableImage
+                      src={src}
+                      alt={alt || project.title}
+                      loading="lazy"
+                      containerClassName="my-4 w-full rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900"
+                      className="w-full h-auto max-h-96 object-cover"
+                    />
+                  ) : null,
               }}
             >
               {project.description_md}
