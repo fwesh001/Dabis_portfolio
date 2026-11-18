@@ -32,13 +32,10 @@ export function Navbar({ onOpenCommandPalette, onOpenResume, availableForWork = 
       <div className="max-w-7xl mx-auto px-3 sm:px-4">
         {/* Mobile: justify-between (Option A right-aligned utility controls) | Desktop: 3-column Technical Grid */}
         <div className="flex items-center justify-between md:grid md:grid-cols-[auto_1fr_auto] h-16 md:divide-x md:divide-zinc-200 md:dark:divide-zinc-800/80">
-          {/* Grid Cell 1: Monogram & Name (No subtitle) */}
+          {/* Grid Cell 1: Name Only (No OD monogram badge) */}
           <div className="md:pr-6 flex items-center flex-shrink-0">
-            <Link href="/#hero" className="flex items-center space-x-2.5 sm:space-x-3 group cursor-pointer">
-              <div className="w-9 h-9 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 flex items-center justify-center font-mono font-bold text-xs tracking-wider text-zinc-900 dark:text-white group-hover:border-[var(--accent)] group-hover:text-[var(--accent)] transition-all shadow-sm">
-                OD
-              </div>
-              <span className="font-semibold text-sm text-zinc-950 dark:text-zinc-100 group-hover:text-black dark:group-hover:text-white transition-colors whitespace-nowrap">
+            <Link href="/#hero" className="flex items-center group cursor-pointer">
+              <span className="font-bold text-sm sm:text-base tracking-tight text-zinc-950 dark:text-zinc-100 group-hover:text-[var(--accent)] transition-colors whitespace-nowrap">
                 Olehi Davis
               </span>
             </Link>
