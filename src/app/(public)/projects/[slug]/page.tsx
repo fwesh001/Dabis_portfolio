@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Github, ExternalLink } from 'lucide-react';
 import { getProjectBySlug, getProjects } from '@/lib/queries';
 import { MarkdownRenderer } from '@/components/blog/markdown-renderer';
+import { ExpandableImage } from '@/components/ui/image-lightbox';
 
 export async function generateStaticParams() {
   const projects = await getProjects();
@@ -96,13 +97,12 @@ export default async function ProjectDetailPage({
 
       {/* Cover Image Banner */}
       {project.cover_image && (
-        <div className="w-full rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-lg bg-zinc-100 dark:bg-zinc-950">
-          <img
-            src={project.cover_image}
-            alt={project.title}
-            className="w-full max-h-[460px] object-cover"
-          />
-        </div>
+        <ExpandableImage
+          src={project.cover_image}
+          alt={project.title}
+          containerClassName="w-full rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-lg bg-zinc-100 dark:bg-zinc-950"
+          className="w-full max-h-[460px] object-cover"
+        />
       )}
 
       {/* Rendered Markdown Case Study Body */}
