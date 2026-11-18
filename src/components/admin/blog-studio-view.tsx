@@ -181,14 +181,14 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
   };
 
   return (
-    <div className="space-y-4 max-w-6xl mx-auto flex flex-col">
+    <div className="space-y-4 max-w-6xl w-full min-w-0 mx-auto flex flex-col">
       {/* Studio Top Control Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-3 flex-shrink-0">
-        <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-3 flex-shrink-0 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto min-w-0">
           <select
             value={selectedPostId}
             onChange={(e) => handleSelectPost(e.target.value)}
-            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono font-medium text-zinc-900 dark:text-white focus:outline-none focus:border-[var(--accent)] max-w-xs truncate shadow-sm"
+            className="flex-1 min-w-0 w-full sm:w-auto sm:max-w-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono font-medium text-zinc-900 dark:text-white focus:outline-none focus:border-[var(--accent)] truncate shadow-sm"
           >
             {posts.map((p) => (
               <option key={p.id} value={p.id}>
@@ -200,7 +200,7 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
           <button
             type="button"
             onClick={handleCreateNew}
-            className="px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-xs font-mono text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-colors shadow-sm"
+            className="flex-shrink-0 px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-xs font-mono text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-colors shadow-sm"
             title="Create new draft post"
           >
             <Plus className="w-3.5 h-3.5 text-[var(--accent)]" />
@@ -211,7 +211,7 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
           <button
             type="button"
             onClick={() => setFormPost((prev) => ({ ...prev, pinned: !prev.pinned }))}
-            className={`px-3 py-2 rounded-xl border text-xs font-mono flex items-center gap-1.5 transition-all shadow-sm ${
+            className={`flex-shrink-0 px-3 py-2 rounded-xl border text-xs font-mono flex items-center gap-1.5 transition-all shadow-sm ${
               formPost.pinned
                 ? 'border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent)] font-semibold'
                 : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
@@ -224,12 +224,12 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
         </div>
 
         {/* Right action tools & mobile tab switch */}
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          <div className="flex md:hidden bg-zinc-100 dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono">
+        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 w-full sm:w-auto min-w-0">
+          <div className="flex md:hidden bg-zinc-100 dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono flex-shrink-0">
             <button
               type="button"
               onClick={() => setActiveMobileTab('write')}
-              className={`px-2.5 py-1 rounded transition-colors ${
+              className={`px-2 py-1 rounded transition-colors ${
                 activeMobileTab === 'write'
                   ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-semibold shadow-sm'
                   : 'text-zinc-500'
@@ -240,7 +240,7 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
             <button
               type="button"
               onClick={() => setActiveMobileTab('preview')}
-              className={`px-2.5 py-1 rounded transition-colors ${
+              className={`px-2 py-1 rounded transition-colors ${
                 activeMobileTab === 'preview'
                   ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-semibold shadow-sm'
                   : 'text-zinc-500'
@@ -251,7 +251,7 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
             <button
               type="button"
               onClick={() => setActiveMobileTab('settings')}
-              className={`px-2.5 py-1 rounded transition-colors ${
+              className={`px-2 py-1 rounded transition-colors ${
                 activeMobileTab === 'settings'
                   ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-semibold shadow-sm'
                   : 'text-zinc-500'
@@ -261,39 +261,43 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="p-2 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-            title="Delete article"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="p-2 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+              title="Delete article"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
 
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={() => handleSave(false)}
-            className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-xs font-mono text-zinc-700 dark:text-zinc-300 transition-colors flex items-center gap-1.5 shadow-sm"
-          >
-            <Save className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Save Draft</span>
-          </button>
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => handleSave(false)}
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-xs font-mono text-zinc-700 dark:text-zinc-300 transition-colors flex items-center gap-1.5 shadow-sm"
+              title="Save Draft"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Save Draft</span>
+            </button>
 
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={() => handleSave(true)}
-            className="px-4 py-1.5 rounded-xl text-xs font-mono font-semibold text-black flex items-center gap-1.5 shadow transition-all hover:opacity-90"
-            style={{ backgroundColor: 'var(--accent)' }}
-          >
-            {isSaving ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Check className="w-3.5 h-3.5" />
-            )}
-            <span>{formPost.published ? 'Update Live' : 'Publish Live'}</span>
-          </button>
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => handleSave(true)}
+              className="px-3 sm:px-4 py-1.5 rounded-xl text-xs font-mono font-semibold text-black flex items-center gap-1.5 shadow transition-all hover:opacity-90 whitespace-nowrap"
+              style={{ backgroundColor: 'var(--accent)' }}
+            >
+              {isSaving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Check className="w-3.5 h-3.5" />
+              )}
+              <span>{formPost.published ? 'Update' : 'Publish'}</span>
+              <span className="hidden sm:inline">Live</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -364,10 +368,10 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
       </div>
 
       {/* Main Studio Body: Desktop Split Grid vs Mobile Tabbed View */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[540px]">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[540px] min-w-0 w-full">
         {/* Left Pane: Editor */}
         <div
-          className={`flex flex-col space-y-3 p-4 rounded-2xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 shadow-sm ${
+          className={`flex flex-col space-y-3 p-4 rounded-2xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 shadow-sm min-w-0 ${
             activeMobileTab === 'write' ? 'flex' : 'hidden md:flex'
           }`}
         >
@@ -390,13 +394,13 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
               className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm font-bold text-zinc-900 dark:text-white focus:outline-none focus:border-[var(--accent)] font-sans shadow-sm"
             />
 
-            <div className="flex gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <input
                 type="text"
                 value={formPost.slug}
                 onChange={(e) => setFormPost((prev) => ({ ...prev, slug: e.target.value }))}
                 placeholder="slug-path"
-                className="w-1/2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-1.5 text-zinc-600 dark:text-zinc-400 font-mono focus:outline-none focus:border-[var(--accent)]"
+                className="w-full min-w-0 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-1.5 text-zinc-600 dark:text-zinc-400 font-mono focus:outline-none focus:border-[var(--accent)]"
               />
               <input
                 type="text"
@@ -411,7 +415,7 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
                   }))
                 }
                 placeholder="Tags (comma separated)"
-                className="w-1/2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-1.5 text-zinc-600 dark:text-zinc-400 font-mono focus:outline-none focus:border-[var(--accent)]"
+                className="w-full min-w-0 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-1.5 text-zinc-600 dark:text-zinc-400 font-mono focus:outline-none focus:border-[var(--accent)]"
               />
             </div>
           </div>
@@ -486,7 +490,7 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
 
         {/* Right Pane: Live Rendered Preview */}
         <div
-          className={`p-6 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 overflow-y-auto space-y-6 shadow-sm ${
+          className={`p-4 sm:p-6 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 overflow-y-auto overflow-x-hidden min-w-0 space-y-6 shadow-sm ${
             activeMobileTab === 'preview' ? 'block' : 'hidden md:block'
           }`}
         >
@@ -545,7 +549,7 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
 
         {/* Settings Tab (Mobile Viewport) */}
         <div
-          className={`space-y-4 p-5 rounded-2xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 font-mono text-xs ${
+          className={`space-y-4 p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 font-mono text-xs min-w-0 ${
             activeMobileTab === 'settings' ? 'block md:hidden' : 'hidden'
           }`}
         >
