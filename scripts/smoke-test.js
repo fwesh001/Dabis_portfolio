@@ -5,7 +5,7 @@ const VERCEL_TOKEN = process.env.VERCEL_TOKEN || '';
 
 const routes = [
   '/',
-  '/projects/hyperqueue',
+  '/projects/clintons-inventory-app',
   '/blog',
   '/blog/building-distributed-idempotency-keys',
   '/admin/login',
