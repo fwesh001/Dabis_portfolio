@@ -228,7 +228,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </aside>
 
         {/* Dedicated Scrollable Main Content Pane */}
-        <main id="admin-main-scroll" className="flex-1 h-full overflow-y-auto p-4 sm:p-8 relative">
+        <main id="admin-main-scroll" className="flex-1 min-w-0 h-full overflow-y-auto overflow-x-hidden p-4 sm:p-8 relative">
           {children}
         </main>
       </div>
