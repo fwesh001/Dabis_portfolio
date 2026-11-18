@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { ChevronRight, ChevronDown, ExternalLink, Github, FolderGit2 } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
+import { ExpandableImage } from '@/components/ui/image-lightbox';
 import type { Project } from '@/lib/types';
 
 interface ProjectGridProps {
@@ -123,15 +124,13 @@ export function ProjectGrid({ projects, onOpenCaseStudy }: ProjectGridProps) {
                 <div className="space-y-4">
                   {/* Project Card Image Banner */}
                   {project.cover_image ? (
-                    <div className="w-full h-44 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 relative bg-zinc-100 dark:bg-zinc-950 group-hover:border-[var(--accent)]/50 transition-colors">
-                      <img
-                        src={project.cover_image}
-                        alt={project.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
+                    <ExpandableImage
+                      src={project.cover_image}
+                      alt={project.title}
+                      loading="lazy"
+                      containerClassName="w-full h-44 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 group-hover:border-[var(--accent)]/50 transition-colors"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
                   ) : (
                     <div className="w-full h-40 sm:h-44 rounded-2xl bg-zinc-950 border border-zinc-800/80 relative overflow-hidden flex items-center justify-center p-4">
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--accent)/0.12,transparent_70%)]" />
