@@ -4,7 +4,7 @@ import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { Lock, Mail, KeyRound, Loader2, ArrowRight } from 'lucide-react';
+import { Mail, KeyRound, Loader2, ArrowRight } from 'lucide-react';
 
 function LoginForm() {
   const [email, setEmail] = useState('admin@olehidavis.dev');
@@ -53,9 +53,6 @@ function LoginForm() {
           OD
         </div>
         <h1 className="text-2xl font-bold text-zinc-950 dark:text-white">Admin Authentication</h1>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
-          Protected by Supabase Middleware &amp; Session Guard
-        </p>
       </div>
 
       <form onSubmit={handleLogin} className="space-y-4">
@@ -105,12 +102,6 @@ function LoginForm() {
           )}
         </button>
       </form>
-
-      <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 text-center">
-        <p className="text-[11px] font-mono text-zinc-500">
-          Authorized personnel only &bull; Multi-factor session guard
-        </p>
-      </div>
     </div>
   );
 }
