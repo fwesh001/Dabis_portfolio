@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Class-based dark mode for next-themes
+--------------------------------------------------------------------------- */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Dynamic brand accent token (Emerald-500 default) */
+  --accent: #10B981;
+  --accent-muted: rgba(16, 185, 129, 0.15);
+
+  /* Surfaces - Light mode */
+  --background: #fafafa;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --border: #e4e4e7;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+
+  color-scheme: light;
+}
+
+.dark {
+  /* Surfaces - Dark mode (High-contrast Zinc scale) */
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #121215;
+  --card-foreground: #fafafa;
+  --border: #27272a;
+  --muted: #18181b;
+  --muted-foreground: #a1a1aa;
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-muted: var(--accent-muted);
+
+  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------------------------------------------------------------------------
+   Balanced Dot-Matrix Portfolio Background (Dark & Light Themes)
+--------------------------------------------------------------------------- */
+.bg-dot-grid {
+  background-color: var(--background);
+  background-image: radial-gradient(rgba(9, 9, 11, 0.14) 1.35px, transparent 1.35px);
+  background-size: 26px 26px;
+}
+
+.dark .bg-dot-grid {
+  background-color: var(--background);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.11) 1.35px, transparent 1.35px);
+  background-size: 26px 26px;
+}
+
+/* Traced tail micro-animation for Sticky Back-to-Top Arrow */
+.back-to-top-tail {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 6;
+  transition: stroke-dashoffset 0.35s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s ease;
+}
+
+.group:hover .back-to-top-tail {
+  stroke-dashoffset: 0;
+  transform: translateY(-1.5px);
+}
+
+/* Outlined Cut-Half Footer Fade Mask */
+.footer-cut-fade {
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.45) 55%, rgba(0, 0, 0, 0) 100%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.45) 55%, rgba(0, 0, 0, 0) 100%);
+}
+
+/* ---------------------------------------------------------------------------
+   Custom Theme-Synced Scrollbars (8px)
+--------------------------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+.light ::-webkit-scrollbar-track,
+:root:not(.dark) ::-webkit-scrollbar-track {
+  background: #f4f4f5;
+}
+
+.light ::-webkit-scrollbar-thumb,
+:root:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+}
+
+.light ::-webkit-scrollbar-thumb:hover,
+:root:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+
+/* ---------------------------------------------------------------------------
+   Spring Custom Cursor Styling
+--------------------------------------------------------------------------- */
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  background-color: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.15s ease;
+}
+
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease,
+              border-color 0.2s ease,
+              opacity 0.15s ease;
+}
+
+.cursor-ring.active {
+  width: 44px;
+  height: 44px;
+  background-color: var(--accent-muted);
+  border-color: var(--accent);
+}
+
+@media (pointer: coarse) {
+  .cursor-dot,
+  .cursor-ring {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-ring {
+    transition: none !important;
+  }
+}
