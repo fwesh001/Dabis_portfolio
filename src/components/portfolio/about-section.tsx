@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
+import { ExpandableImage } from '@/components/ui/image-lightbox';
 import type { SiteProfile } from '@/lib/types';
 
 interface AboutSectionProps {
@@ -81,6 +82,16 @@ export function AboutSection({ profile }: AboutSectionProps) {
                   {children}
                 </code>
               ),
+              img: ({ src, alt }) =>
+                typeof src === 'string' && src ? (
+                  <ExpandableImage
+                    src={src}
+                    alt={alt || 'About image'}
+                    loading="lazy"
+                    containerClassName="my-4 w-full max-w-2xl rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 shadow-sm"
+                    className="w-full h-auto max-h-[420px] object-cover"
+                  />
+                ) : null,
             }}
           >
             {markdownContent}
