@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Github, ExternalLink } from 'lucide-react';
 import { getProjectBySlug, getProjects } from '@/lib/queries';
+import { MarkdownRenderer } from '@/components/blog/markdown-renderer';
 
 export async function generateStaticParams() {
   const projects = await getProjects();
@@ -38,9 +39,9 @@ export default async function ProjectDetailPage({
           <span className="text-xs font-mono text-[var(--accent)] font-semibold uppercase tracking-wider">
             Engineering Case Study
           </span>
-          {project.featured && (
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400">
-              Featured Flagship
+          {project.status && (
+            <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">
+              {project.status}
             </span>
           )}
         </div>
@@ -93,10 +94,19 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
-      {/* Case Study Content Body */}
-      <div className="space-y-6 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed font-sans whitespace-pre-wrap">
-        {project.description_md}
-      </div>
+      {/* Cover Image Banner */}
+      {project.cover_image && (
+        <div className="w-full rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-lg bg-zinc-100 dark:bg-zinc-950">
+          <img
+            src={project.cover_image}
+            alt={project.title}
+            className="w-full max-h-[460px] object-cover"
+          />
+        </div>
+      )}
+
+      {/* Rendered Markdown Case Study Body */}
+      <MarkdownRenderer content={project.description_md || project.summary} />
     </article>
   );
 }
