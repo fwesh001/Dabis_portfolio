@@ -10,6 +10,9 @@ const routes = [
   '/blog/building-distributed-idempotency-keys',
   '/admin/login',
   '/sitemap.xml',
+  '/manifest.webmanifest',
+  '/sw.js',
+  '/opengraph-image',
   '/api/rss.xml',
   '/api/visitors',
 ];
