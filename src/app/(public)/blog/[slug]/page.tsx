@@ -6,6 +6,7 @@ import { getPostBySlug, getPosts } from '@/lib/queries';
 import { ReadingProgress } from '@/components/blog/reading-progress';
 import { TableOfContents, type TocItem } from '@/components/blog/table-of-contents';
 import { MarkdownRenderer } from '@/components/blog/markdown-renderer';
+import { ExpandableImage } from '@/components/ui/image-lightbox';
 
 export async function generateStaticParams() {
   const posts = await getPosts(true);
@@ -99,13 +100,12 @@ export default async function ArticlePage({
 
             {/* Article Cover Image Banner */}
             {post.cover_image && (
-              <div className="w-full max-h-[420px] rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-lg bg-zinc-100 dark:bg-zinc-950">
-                <img
-                  src={post.cover_image}
-                  alt={post.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <ExpandableImage
+                src={post.cover_image}
+                alt={post.title}
+                containerClassName="w-full max-h-[420px] rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-lg bg-zinc-100 dark:bg-zinc-950"
+                className="w-full h-full object-cover"
+              />
             )}
 
             {/* Mobile Collapsible TOC Accordion */}
