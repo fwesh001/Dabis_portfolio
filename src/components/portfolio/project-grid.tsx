@@ -49,19 +49,26 @@ function getStatusBadgeStyle(status?: string) {
 }
 
 export function ProjectGrid({ projects, onOpenCaseStudy }: ProjectGridProps) {
-  const [activeFilter, setActiveFilter] = useState<'all' | 'distributed' | 'cloud' | 'web'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'web' | 'desktop' | 'mobile' | 'electronics'>('all');
   const [showAll, setShowAll] = useState(false);
 
   const filteredProjects = useMemo(() => {
     if (activeFilter === 'all') return projects;
-    if (activeFilter === 'distributed') {
-      return projects.filter(p => p.tech_stack.some(t => ['Go', 'Raft', 'Kafka', 'Redis', 'IoT', 'ESP32'].includes(t)));
-    }
-    if (activeFilter === 'cloud') {
-      return projects.filter(p => p.tech_stack.some(t => ['Docker', 'Kubernetes', 'eBPF', 'AWS', 'OpenTelemetry', 'etcd'].includes(t)));
-    }
+    const matchAny = (p: Project, keywords: string[]) => {
+      const haystack = [p.title, p.summary, ...p.tech_stack].join(' ').toLowerCase();
+      return keywords.some((kw) => haystack.includes(kw));
+    };
     if (activeFilter === 'web') {
-      return projects.filter(p => p.tech_stack.some(t => ['Next.js', 'Next.js 15', 'TypeScript', 'Tailwind', 'Supabase'].includes(t)));
+      return projects.filter((p) => matchAny(p, ['web', 'next.js', 'react', 'pos', 'inventory', 'supabase']));
+    }
+    if (activeFilter === 'desktop') {
+      return projects.filter((p) => matchAny(p, ['desktop', 'electron', 'tauri', 'java', 'bece']));
+    }
+    if (activeFilter === 'mobile') {
+      return projects.filter((p) => matchAny(p, ['android', 'mobile', 'ios', 'flutter', 'react native', 'chatbot', 'kotlin']));
+    }
+    if (activeFilter === 'electronics') {
+      return projects.filter((p) => matchAny(p, ['electronic', 'esp8266', 'esp32', 'nodemcu', 'tft', 'embedded', 'iot', 'microcontroller']));
     }
     return projects;
   }, [projects, activeFilter]);
@@ -76,46 +83,30 @@ export function ProjectGrid({ projects, onOpenCaseStudy }: ProjectGridProps) {
 
           {/* Filter Pills */}
           <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs font-mono">
-            <button
-              onClick={() => { setActiveFilter('all'); setShowAll(false); }}
-              className={`px-3 py-1.5 rounded-xl transition-all ${
-                activeFilter === 'all'
-                  ? 'bg-zinc-900 dark:bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                  : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-zinc-800'
-              }`}
-            >
-              All ({projects.length})
-            </button>
-            <button
-              onClick={() => { setActiveFilter('distributed'); setShowAll(false); }}
-              className={`px-3 py-1.5 rounded-xl transition-all ${
-                activeFilter === 'distributed'
-                  ? 'bg-zinc-900 dark:bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                  : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-zinc-800'
-              }`}
-            >
-              Distributed
-            </button>
-            <button
-              onClick={() => { setActiveFilter('cloud'); setShowAll(false); }}
-              className={`px-3 py-1.5 rounded-xl transition-all ${
-                activeFilter === 'cloud'
-                  ? 'bg-zinc-900 dark:bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                  : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-zinc-800'
-              }`}
-            >
-              Cloud / Infra
-            </button>
-            <button
-              onClick={() => { setActiveFilter('web'); setShowAll(false); }}
-              className={`px-3 py-1.5 rounded-xl transition-all ${
-                activeFilter === 'web'
-                  ? 'bg-zinc-900 dark:bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-                  : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-zinc-800'
-              }`}
-            >
-              Web Architecture
-            </button>
+            {(
+              [
+                { id: 'all', label: `All (${projects.length})` },
+                { id: 'web', label: 'Web' },
+                { id: 'desktop', label: 'Desktop' },
+                { id: 'mobile', label: 'Mobile' },
+                { id: 'electronics', label: 'Electronics' },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveFilter(tab.id);
+                  setShowAll(false);
+                }}
+                className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
+                  activeFilter === tab.id
+                    ? 'bg-zinc-900 dark:bg-zinc-800 text-white border border-zinc-700 shadow-sm'
+                    : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-zinc-800'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
       </ScrollReveal>
