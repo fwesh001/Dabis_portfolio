@@ -60,155 +60,92 @@ Senior Software Engineer with 7+ years of hands-on experience designing and oper
 export const seedProjects: Project[] = [
   {
     id: 'b1a2c3d4-0001-4000-8000-000000000001',
-    title: 'HyperQueue — Distributed Task Engine',
-    slug: 'hyperqueue',
-    summary: 'High-throughput task queue engine with exactly-once delivery semantics, horizontal worker scaling, and dead-letter queue recovery.',
-    description_md: `### 01 // Problem Statement
-Existing message broker instances suffered from duplicate message deliveries during network partitions, causing payment processing race conditions under 30k req/sec peak spikes.
+    title: 'Clintons Inventory App',
+    slug: 'clintons-inventory-app',
+    summary: 'An inventory application made for a drug store to keep stock of available drugs, record purchases, and track sales with an inbuilt POS and low-stock admin notifications.',
+    description_md: `### 01 // Overview
+An inventory application made for a drug store to keep stock of the available drugs, to make purchases, and to track sales.
 
-### 02 // System Architecture Flow
-\`\`\`text
-[Client Request] -> [API Gateway (Vanguard)]
-    | (Atomic Idempotency Key Check in Redis)
-    v
-[HyperQueue Raft Coordinator Cluster]
-    | (Write-Ahead Append Log in PostgreSQL)
-    v
-[Worker Pool (Go Goroutines)] -> [ACK & State Mutation]
-\`\`\`
-
-### 03 // Key Technical Trade-offs
-- **Consistency vs Latency:** Opted for strict Raft consensus quorum over eventual consistency, trading ~4ms of write latency for zero ghost task executions.
-- **Memory vs Durability:** In-memory Redis sliding windows cache task states while PostgreSQL WAL guarantees crash recovery without state loss.
-
-### 04 // Quantifiable Results
-- **4.8x** Throughput Gain (45,000 msg/sec)
-- **0** Duplicate Task Executions
-- **-65%** AWS Infrastructure Cost reduction`,
-    cover_image: null,
-    live_url: 'https://api.olehidavis.dev/hyperqueue',
-    repo_url: 'https://github.com/18d-shady/hyperqueue',
-    tech_stack: ['Go', 'Raft', 'PostgreSQL', 'Redis'],
+### 02 // Key Capabilities
+- **Inbuilt POS Application:** Enables employees to process customer sales directly while automatically refreshing inventory stock levels in real time.
+- **Purchases & Stock Tracking:** Full tracking of purchased items, purchase costs, available stock counts, and recent sales history.
+- **Low-Stock Admin Alerts:** Automatically notifies the administrator on low-stock items to prevent stockouts and streamline restocking.
+- **Analytics Dashboard:** Real-time daily/monthly sales cards and 7-day sales trend visualization.`,
+    cover_image: 'https://xvkflglkiupevstyrgwu.supabase.co/storage/v1/object/public/portfolio-assets/projects/clintons-inventory-app.png',
+    live_url: null,
+    repo_url: null,
+    tech_stack: ['Web Application', 'Python', 'POS', 'Inventory Management'],
     featured: true,
+    status: 'Live',
     display_order: 1,
-    created_at: '2024-01-15T00:00:00.000Z',
-    updated_at: '2024-01-15T00:00:00.000Z',
+    created_at: '2024-10-18T00:00:00.000Z',
+    updated_at: '2024-10-18T00:00:00.000Z',
   },
   {
     id: 'b1a2c3d4-0002-4000-8000-000000000002',
-    title: 'Vanguard — Zero-Trust API Gateway',
-    slug: 'vanguard',
-    summary: 'Lightweight reverse-proxy gateway implementing dynamic JWT verification, distributed rate limiting with sliding windows, and distributed tracing.',
-    description_md: `### 01 // Problem Statement
-Legacy API routing incurred excessive latency (p99 > 85ms) and lacked centralized cryptographic identity enforcement across 30+ internal microservices.
+    title: 'BECE ERC Application',
+    slug: 'bece-erc-application',
+    summary: 'An Educational Resources Center desktop application designed for the BECE examination with the Access Solutions technology team to compute and manage student examination results.',
+    description_md: `### 01 // Overview
+An Educational Resources Center desktop application designed for the Basic Education Certificate Examination (BECE), built in collaboration with the Access Solutions technology team.
 
-### 02 // Architecture & Implementation
-Engineered in Go utilizing eBPF network hooks and sliding-window rate limiters backed by Redis clusters. Full OpenTelemetry tracing context propagation across all HTTP and gRPC request headers.
-
-### 03 // Results
-- **p99 Latency:** 3.2ms
-- **Zero-Trust Security:** 100% mTLS and JWT coverage
-- **Throughput:** 60,000 req/sec per cluster node`,
-    cover_image: null,
+### 02 // Key Capabilities
+- **Examination Result Computation:** Accurate computation and aggregation of student scores across registered BECE subjects.
+- **Student & Subject Registration Analytics:** Tracks registered student counts, gender distribution breakdown, and per-subject enrollment tables.
+- **Reporting & Institutional Management:** Dedicated Home, Student, Report, and Settings workflows tailored for FCT Education Resource Management, Abuja.`,
+    cover_image: 'https://xvkflglkiupevstyrgwu.supabase.co/storage/v1/object/public/portfolio-assets/projects/bece-erc-application.jpg',
     live_url: null,
-    repo_url: 'https://github.com/18d-shady/vanguard',
-    tech_stack: ['Go', 'Docker', 'eBPF', 'OpenTelemetry'],
+    repo_url: null,
+    tech_stack: ['Desktop Application', 'Java', 'Kotlin', 'Result Processing'],
     featured: true,
+    status: 'Live',
     display_order: 2,
-    created_at: '2024-02-10T00:00:00.000Z',
-    updated_at: '2024-02-10T00:00:00.000Z',
+    created_at: '2024-11-01T00:00:00.000Z',
+    updated_at: '2024-11-01T00:00:00.000Z',
   },
   {
     id: 'b1a2c3d4-0003-4000-8000-000000000003',
-    title: 'Pulse — Time-Series Metrics Broker',
-    slug: 'pulse',
-    summary: 'Asynchronous metrics aggregator capable of buffering 250,000 telemetry datapoints per second with automated partition compaction.',
-    description_md: `### 01 // Problem Statement
-High-frequency IoT and telemetry ingestion caused write saturation and lock contention on conventional relational tables during traffic surges.
+    title: "PAHelp's Chatbot",
+    slug: 'pahelps-chatbot',
+    summary: "An Android AI assistant trained with Python's Rasa model for offline communication and integrated with OpenAI's model for online communication, complete with special admin features.",
+    description_md: `### 01 // Overview
+A client Android chatbot application built to provide seamless enquiry handling and intelligent assistance both offline and online.
 
-### 02 // Architecture & Implementation
-Streamed data via Apache Kafka into a specialized Go consumer pipeline that batches writes into TimescaleDB hypertables, coupled with automated background partition compression.
-
-### 03 // Results
-- Ingestion sustained at 250,000 points/sec
-- Database storage footprint reduced by 72% via TimescaleDB compression`,
-    cover_image: null,
+### 02 // Hybrid AI Architecture
+- **Offline Communication (Rasa):** Trained with Python's Rasa NLU/dialogue framework to answer client enquiries reliably without an active internet connection.
+- **Online AI Communication (OpenAI):** Integrates OpenAI's language models when connected to deliver broad, context-aware AI assistance.
+- **Admin Features & Chat History:** Password-protected admin mode, organized date-grouped previous chat archive, and a clean conversational user experience.`,
+    cover_image: 'https://xvkflglkiupevstyrgwu.supabase.co/storage/v1/object/public/portfolio-assets/projects/pahelps-chatbot.jpg',
     live_url: null,
-    repo_url: 'https://github.com/18d-shady/pulse',
-    tech_stack: ['Kafka', 'Go', 'TimescaleDB'],
+    repo_url: null,
+    tech_stack: ['Android Application', 'Kotlin', 'Python', 'Rasa', 'OpenAI'],
     featured: true,
+    status: 'Live',
     display_order: 3,
-    created_at: '2024-03-05T00:00:00.000Z',
-    updated_at: '2024-03-05T00:00:00.000Z',
+    created_at: '2025-03-01T00:00:00.000Z',
+    updated_at: '2025-03-01T00:00:00.000Z',
   },
   {
     id: 'b1a2c3d4-0004-4000-8000-000000000004',
-    title: 'Prism — Headless Publishing Engine',
-    slug: 'prism',
-    summary: 'Senior engineering blog & content engine featuring Next.js Server Components, on-demand revalidation, and Supabase RLS security.',
-    description_md: `### 01 // Problem Statement
-Content management systems typically suffer from either slow dynamic database queries or inflexible static site generation build queues.
+    title: 'Signature Pad',
+    slug: 'signature-pad',
+    summary: 'An electronic signature pad built with an ESP8266 NodeMCU microcontroller, 2.8-inch TFT touchscreen, and stylus supporting real-time PC preview and signature image export.',
+    description_md: `### 01 // Overview
+An electronic signature pad hardware device implemented with an ESP8266 NodeMCU microcontroller, a 2.8-inch TFT touchscreen display, and a stylus.
 
-### 02 // Architecture & Implementation
-Engineered with Next.js 15 App Router using React Server Components for near-instant edge delivery, paired with on-demand ISR revalidation triggered via Supabase Server Actions upon mutation.
-
-### 03 // Results
-- 100/100 Lighthouse Performance, SEO, and Accessibility
-- Sub-50ms TTFB globally via edge caching`,
-    cover_image: null,
-    live_url: 'https://olehidavis.dev',
-    repo_url: 'https://github.com/18d-shady/prism',
-    tech_stack: ['Next.js 15', 'TypeScript', 'Supabase', 'Tailwind'],
+### 02 // Hardware & Software Capabilities
+- **Live Touch Coordinate Capture:** Reads stylus touch coordinates directly from the 2.8-inch TFT resistive touchscreen and renders the stroke immediately on-device for the user.
+- **Real-Time PC Screen Mirroring:** Streams touch coordinates to the connected PC so the signature can be viewed in real time as it is being drawn.
+- **One-Click Signature Export:** Clicking send packages and transmits the captured handwritten signature as a clean image file directly to the connected PC.`,
+    cover_image: 'https://xvkflglkiupevstyrgwu.supabase.co/storage/v1/object/public/portfolio-assets/projects/signature-pad.jpg',
+    live_url: null,
+    repo_url: null,
+    tech_stack: ['Electronic Device', 'ESP8266 NodeMCU', 'TFT Touchscreen', 'Embedded C++'],
     featured: true,
+    status: 'Live',
     display_order: 4,
-    created_at: '2024-04-01T00:00:00.000Z',
-    updated_at: '2024-04-01T00:00:00.000Z',
-  },
-  {
-    id: 'b1a2c3d4-0005-4000-8000-000000000005',
-    title: 'Aura — IoT Telemetry Bridge',
-    slug: 'aura-iot',
-    summary: 'Hardware-to-cloud bidirectional streaming gateway bridging ESP32 microcontrollers with MQTT and gRPC time-series pipelines.',
-    description_md: `### 01 // Problem Statement
-Industrial environmental sensors suffered packet drops and clock drift during intermittent cellular connectivity.
-
-### 02 // Architecture & Implementation
-Firmware engineered in Embedded C/C++ on ESP32 running FreeRTOS with local ring-buffer SPI flash caching, syncing via gRPC over TLS upon connection restoration.
-
-### 03 // Results
-- 99.99% telemetry packet retention across network blackouts
-- Sub-50mW sleep cycle power consumption`,
-    cover_image: null,
-    live_url: null,
-    repo_url: 'https://github.com/18d-shady/aura-iot',
-    tech_stack: ['ESP32', 'Embedded C++', 'MQTT', 'gRPC', 'FreeRTOS'],
-    featured: false,
-    display_order: 5,
-    created_at: '2024-05-10T00:00:00.000Z',
-    updated_at: '2024-05-10T00:00:00.000Z',
-  },
-  {
-    id: 'b1a2c3d4-0006-4000-8000-000000000006',
-    title: 'Chronos — Distributed Cron Engine',
-    slug: 'chronos',
-    summary: 'Fault-tolerant distributed job scheduler with leader election, lease-based locking, and millisecond dispatch accuracy.',
-    description_md: `### 01 // Problem Statement
-Centralized cron servers constituted single points of failure with no automatic failover or granular job concurrency throttling.
-
-### 02 // Architecture & Implementation
-Built in Go using etcd distributed locks and hierarchical time-wheel data structures, executing up to 100,000 scheduled tasks per minute.
-
-### 03 // Results
-- High-availability active-passive auto-failover in < 2 seconds
-- Zero job loss across cluster reboots`,
-    cover_image: null,
-    live_url: null,
-    repo_url: 'https://github.com/18d-shady/chronos',
-    tech_stack: ['Go', 'etcd', 'Docker', 'Prometheus'],
-    featured: false,
-    display_order: 6,
-    created_at: '2024-06-01T00:00:00.000Z',
-    updated_at: '2024-06-01T00:00:00.000Z',
+    created_at: '2025-01-15T00:00:00.000Z',
+    updated_at: '2025-01-15T00:00:00.000Z',
   },
 ];
 
