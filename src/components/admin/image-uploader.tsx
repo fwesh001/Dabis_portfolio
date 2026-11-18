@@ -4,6 +4,7 @@ import React, { useState, useId, useEffect } from 'react';
 import { UploadCloud, FileCheck, Eye, Trash2 } from 'lucide-react';
 import { uploadAsset } from '@/lib/supabase/storage';
 import { UploadProgressBar, type UploadProgressStatus } from '@/components/ui/upload-progress-bar';
+import { ImageLightbox } from '@/components/ui/image-lightbox';
 import { toast } from 'sonner';
 
 interface ImageUploaderProps {
@@ -34,6 +35,13 @@ export function ImageUploader({
   const [uploadStatus, setUploadStatus] = useState<UploadProgressStatus>('uploading');
   const [uploadingFileName, setUploadingFileName] = useState<string>('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentUrl || null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  const isImageAsset = Boolean(
+    previewUrl &&
+      ((accept.includes('image') && !/\.pdf(\?|$)/i.test(previewUrl)) ||
+        /\.(png|jpe?g|webp|gif|svg|avif)(\?|$)/i.test(previewUrl))
+  );
 
   useEffect(() => {
     setPreviewUrl(currentUrl || null);
@@ -127,7 +135,23 @@ export function ImageUploader({
       ) : previewUrl ? (
         <div className="p-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3 overflow-hidden">
-            <FileCheck className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+            {isImageAsset && previewUrl ? (
+              <button
+                type="button"
+                onClick={() => setLightboxOpen(true)}
+                className="w-10 h-10 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 flex-shrink-0 cursor-zoom-in hover:ring-2 hover:ring-[var(--accent)] transition-all"
+                title="Click to view full screen"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={previewUrl}
+                  alt={label}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ) : (
+              <FileCheck className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+            )}
             <div className="truncate">
               <div className="text-zinc-900 dark:text-zinc-200 truncate font-medium">
                 {previewUrl.split('/').pop() || 'uploaded-asset'}
@@ -137,15 +161,26 @@ export function ImageUploader({
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            <a
-              href={previewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 rounded-lg text-zinc-500 hover:text-black dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
-              title="Preview Asset"
-            >
-              <Eye className="w-4 h-4" />
-            </a>
+            {isImageAsset ? (
+              <button
+                type="button"
+                onClick={() => setLightboxOpen(true)}
+                className="p-1.5 rounded-lg text-zinc-500 hover:text-black dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                title="View Full Screen"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            ) : (
+              <a
+                href={previewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded-lg text-zinc-500 hover:text-black dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                title="Preview Asset"
+              >
+                <Eye className="w-4 h-4" />
+              </a>
+            )}
             <button
               type="button"
               onClick={handleDelete}
@@ -187,6 +222,15 @@ export function ImageUploader({
             className="hidden"
           />
         </div>
+      )}
+
+      {isImageAsset && previewUrl && (
+        <ImageLightbox
+          src={previewUrl}
+          alt={label}
+          open={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+        />
       )}
     </div>
   );
