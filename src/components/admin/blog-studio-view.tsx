@@ -22,6 +22,7 @@ import {
 import { toast } from 'sonner';
 import { saveBlogPostAction, deleteBlogPostAction } from '@/lib/actions/admin-actions';
 import { MarkdownRenderer } from '@/components/blog/markdown-renderer';
+import { ExpandableImage } from '@/components/ui/image-lightbox';
 import { ImageUploader } from './image-uploader';
 import type { BlogPost } from '@/lib/types';
 
@@ -498,13 +499,12 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
 
           <div className="space-y-4">
             {formPost.cover_image && (
-              <div className="w-full h-48 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
-                <img
-                  src={formPost.cover_image}
-                  alt={formPost.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <ExpandableImage
+                src={formPost.cover_image}
+                alt={formPost.title || 'Article cover'}
+                containerClassName="w-full h-48 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800"
+                className="w-full h-full object-cover"
+              />
             )}
 
             <div className="flex flex-wrap items-center gap-2">
