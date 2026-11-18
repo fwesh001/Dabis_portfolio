@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Search, ArrowRight, BookOpen, Pin } from 'lucide-react';
+import { ExpandableImage } from '@/components/ui/image-lightbox';
 import type { BlogPost } from '@/lib/types';
 
 interface BlogIndexViewProps {
@@ -63,13 +64,13 @@ export function BlogIndexView({ initialPosts }: BlogIndexViewProps) {
               className="block rounded-3xl bg-white/85 dark:bg-zinc-900/70 backdrop-blur-sm border-2 border-[var(--accent)]/40 hover:border-[var(--accent)] shadow-lg overflow-hidden transition-all group"
             >
               {post.cover_image && (
-                <div className="w-full h-52 sm:h-64 overflow-hidden bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
-                  <img
-                    src={post.cover_image}
-                    alt={post.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
+                <ExpandableImage
+                  src={post.cover_image}
+                  alt={post.title}
+                  stopPropagation
+                  containerClassName="w-full h-52 sm:h-64 overflow-hidden bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
               )}
 
               <div className="p-6 sm:p-7 space-y-4">
@@ -169,14 +170,14 @@ export function BlogIndexView({ initialPosts }: BlogIndexViewProps) {
               className="block rounded-3xl bg-white/80 dark:bg-zinc-900/50 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 hover:border-[var(--accent)]/60 overflow-hidden transition-all group"
             >
               {post.cover_image && (
-                <div className="w-full h-48 sm:h-56 overflow-hidden bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
-                  <img
-                    src={post.cover_image}
-                    alt={post.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
+                <ExpandableImage
+                  src={post.cover_image}
+                  alt={post.title}
+                  loading="lazy"
+                  stopPropagation
+                  containerClassName="w-full h-48 sm:h-56 overflow-hidden bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
               )}
 
               <div className="p-6 space-y-4">
