@@ -71,14 +71,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <aside className="w-64 h-full border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hidden md:flex flex-col flex-shrink-0">
           {/* Pinned Brand Header */}
           <div className="flex-shrink-0 p-4 pb-3 border-b border-zinc-100 dark:border-zinc-900">
-            <div className="flex items-center space-x-3 px-2">
-              <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-mono font-bold text-xs text-[var(--accent)] shadow-sm">
-                OD
-              </div>
-              <div>
-                <div className="text-xs font-bold text-zinc-900 dark:text-white">Olehi Davis CMS</div>
-                <div className="text-[10px] font-mono text-zinc-500">v2.0 &bull; Supabase RLS</div>
-              </div>
+            <div className="px-2">
+              <div className="text-sm font-bold text-zinc-900 dark:text-white">Olehi Davis CMS</div>
+              <div className="text-[10px] font-mono text-zinc-500">v2.0 &bull; Supabase RLS</div>
             </div>
           </div>
 
