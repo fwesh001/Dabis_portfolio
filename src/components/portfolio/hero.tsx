@@ -16,6 +16,7 @@ import {
 import { toast } from 'sonner';
 import { TypingEffect } from '@/components/ui/typing-effect';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
+import { ExpandableImage } from '@/components/ui/image-lightbox';
 import type { SiteProfile } from '@/lib/types';
 
 interface HeroProps {
@@ -175,7 +176,12 @@ export function Hero({ profile, onOpenResume }: HeroProps) {
               />
               <div className="relative w-60 h-60 sm:w-72 sm:h-72 lg:w-[340px] lg:h-[340px] rounded-full bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 group-hover:border-[var(--accent)]/60 p-2.5 shadow-2xl overflow-hidden transition-colors duration-500">
                 {profile.avatar_url ? (
-                  <div className="relative w-full h-full rounded-full overflow-hidden">
+                  <ExpandableImage
+                    src={profile.avatar_url}
+                    alt={profile.full_name}
+                    showExpandIcon={false}
+                    containerClassName="relative w-full h-full rounded-full overflow-hidden"
+                  >
                     <Image
                       src={profile.avatar_url}
                       alt={profile.full_name}
@@ -183,7 +189,7 @@ export function Hero({ profile, onOpenResume }: HeroProps) {
                       className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
                       unoptimized
                     />
-                  </div>
+                  </ExpandableImage>
                 ) : (
                   <div className="w-full h-full rounded-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center p-6 text-center space-y-3">
                     <div className="w-20 h-20 rounded-full bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center font-mono font-bold text-3xl text-[var(--accent)] shadow-md">
