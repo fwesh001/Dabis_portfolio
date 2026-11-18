@@ -99,14 +99,9 @@ export function MobileQuickSheet({ onOpenResume, email = 'admin@olehidavis.dev' 
             <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-2" />
 
             <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center font-mono font-bold text-xs text-[var(--accent)]">
-                  OD
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-zinc-900 dark:text-white">Olehi Davis</div>
-                  <div className="text-[10px] font-mono text-zinc-500">Navigation &amp; Quick Actions</div>
-                </div>
+              <div>
+                <div className="text-sm font-bold text-zinc-900 dark:text-white">Olehi Davis</div>
+                <div className="text-[10px] font-mono text-zinc-500">Navigation &amp; Quick Actions</div>
               </div>
               <button
                 type="button"
