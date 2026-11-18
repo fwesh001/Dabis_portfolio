@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Copy, Check, FileCode, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { ExpandableImage } from '@/components/ui/image-lightbox';
 
 interface CodeBlockProps {
   inline?: boolean;
@@ -144,6 +145,16 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
               {children}
             </blockquote>
           ),
+          img: ({ src, alt }) =>
+            typeof src === 'string' && src ? (
+              <ExpandableImage
+                src={src}
+                alt={alt || 'Article image'}
+                loading="lazy"
+                containerClassName="my-4 w-full rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 shadow-sm"
+                className="w-full h-auto max-h-[480px] object-cover"
+              />
+            ) : null,
           code: CodeBlock as any,
         }}
       >
