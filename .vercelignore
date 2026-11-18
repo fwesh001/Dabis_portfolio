@@ -1,0 +1,7 @@
+# Exclude Stage 1 design prototypes from Vercel production build
+design-drafts/
+
+# Local scripts & artifacts
+scripts/
+*.log
+.DS_Store
