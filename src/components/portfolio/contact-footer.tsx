@@ -64,24 +64,39 @@ export function ContactFooter({
     ...(socials?.x ? [{ name: 'X / Twitter', url: socials.x, icon: Twitter }] : []),
   ].filter((item) => Boolean(item.url));
 
-  // Increment live visitor counter once per browser session
+  // Sync live visitor counter (server + client deduplicated on a 12-hour window)
   useEffect(() => {
     let active = true;
-    const key = 'od_portfolio_visit_counted';
+    const storageKey = 'od_portfolio_visit_ts';
+    const windowMs = 12 * 60 * 60 * 1000;
 
     const syncVisitors = async () => {
       try {
-        const alreadyCounted = typeof window !== 'undefined' && sessionStorage.getItem(key);
+        let withinWindow = false;
+        if (typeof window !== 'undefined') {
+          try {
+            const lastTs = Number(window.localStorage.getItem(storageKey) || '0');
+            withinWindow = Number.isFinite(lastTs) && lastTs > 0 && Date.now() - lastTs < windowMs;
+          } catch {
+            withinWindow = false;
+          }
+        }
+
         const res = await fetch('/api/visitors', {
-          method: alreadyCounted ? 'GET' : 'POST',
+          method: withinWindow ? 'GET' : 'POST',
+          cache: 'no-store',
         });
         if (!res.ok) return;
         const data = await res.json();
         if (active && typeof data?.count === 'number') {
           setVisitorCount(data.count);
         }
-        if (!alreadyCounted && typeof window !== 'undefined') {
-          sessionStorage.setItem(key, '1');
+        if (!withinWindow && typeof window !== 'undefined') {
+          try {
+            window.localStorage.setItem(storageKey, String(Date.now()));
+          } catch {
+            // Ignore private-mode storage restrictions; server still enforces 12h dedup
+          }
         }
       } catch {
         // Keep initial SSR count silently
