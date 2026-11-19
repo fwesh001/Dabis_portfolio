@@ -35,11 +35,11 @@ const NAV_LINKS = [
   { href: '/admin/settings', label: 'Site Profile', icon: UserCog },
   { href: '/admin/resume', label: 'Resume / CV', icon: FileText },
   { href: '/admin/services', label: 'Services', icon: Wrench },
-  { href: '/admin/projects', label: 'Projects CRUD', icon: FolderGit2 },
+  { href: '/admin/projects', label: 'Projects', icon: FolderGit2 },
   { href: '/admin/experience', label: 'Experience', icon: Briefcase },
   { href: '/admin/education', label: 'Education', icon: GraduationCap },
-  { href: '/admin/skills', label: 'Skills Matrix', icon: Layers },
-  { href: '/admin/blog', label: 'Blog Studio', icon: Edit3 },
+  { href: '/admin/skills', label: 'Stack', icon: Layers },
+  { href: '/admin/blog', label: 'Blog', icon: Edit3 },
   { href: '/admin/security', label: 'Security', icon: ShieldCheck },
 ];
 
