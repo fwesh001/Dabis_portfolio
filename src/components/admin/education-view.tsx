@@ -21,6 +21,7 @@ import {
   deleteEducationAction,
   reorderEducationAction,
 } from '@/lib/actions/admin-actions';
+import { ConfirmationModal } from '@/components/ui/confirmation-modal';
 import type { Education } from '@/lib/types';
 
 interface EducationViewProps {
@@ -32,6 +33,7 @@ export function EducationView({ initialEducation }: EducationViewProps) {
   const [editingEdu, setEditingEdu] = useState<Partial<Education> | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [deletingEdu, setDeletingEdu] = useState<{ id: string; label: string } | null>(null);
 
   const handleCreateNew = () => {
     setEditingEdu({
@@ -52,8 +54,6 @@ export function EducationView({ initialEducation }: EducationViewProps) {
   };
 
   const handleDelete = async (id: string, degree: string, institution: string) => {
-    if (!confirm(`Delete education record: "${degree} at ${institution}"?`)) return;
-
     try {
       await deleteEducationAction(id);
       setEducationList((prev) => prev.filter((e) => e.id !== id));
@@ -240,8 +240,8 @@ export function EducationView({ initialEducation }: EducationViewProps) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(edu.id, edu.degree, edu.institution)}
-                    className="p-1.5 text-zinc-400 hover:text-red-500"
+                    onClick={() => setDeletingEdu({ id: edu.id, label: `${edu.degree} at ${edu.institution}` })}
+                    className="p-1.5 text-zinc-400 hover:text-red-500 transition-colors"
                     title="Delete"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -416,6 +416,24 @@ export function EducationView({ initialEducation }: EducationViewProps) {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal replacing window.confirm */}
+      <ConfirmationModal
+        isOpen={Boolean(deletingEdu)}
+        onClose={() => setDeletingEdu(null)}
+        onConfirm={async () => {
+          if (deletingEdu) {
+            await deleteEducationAction(deletingEdu.id);
+            setEducationList((prev) => prev.filter((e) => e.id !== deletingEdu.id));
+            toast.success(`Removed "${deletingEdu.label}"`);
+            setDeletingEdu(null);
+          }
+        }}
+        title="Delete Education Record?"
+        description={`Are you sure you want to delete the record "${deletingEdu?.label}"? It will be removed from your public timeline.`}
+        confirmLabel="Delete Record"
+        variant="danger"
+      />
     </div>
   );
 }
