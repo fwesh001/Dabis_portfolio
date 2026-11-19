@@ -87,6 +87,7 @@ export interface Education {
 export interface SkillGroup {
   id: string;
   category: string;
+  icon?: string | null;
   skills: string[];
   display_order: number;
 }
