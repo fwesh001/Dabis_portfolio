@@ -21,6 +21,7 @@ import {
   deleteProjectAction,
   reorderProjectAction,
 } from '@/lib/actions/admin-actions';
+import { ConfirmationModal } from '@/components/ui/confirmation-modal';
 import { ImageUploader } from './image-uploader';
 import type { Project } from '@/lib/types';
 
@@ -35,6 +36,7 @@ export function ProjectsView({ initialProjects }: ProjectsViewProps) {
   const [editingProject, setEditingProject] = useState<Partial<Project> | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [deletingProject, setDeletingProject] = useState<{ id: string; title: string } | null>(null);
 
   const handleCreateNew = () => {
     setEditingProject({
@@ -59,8 +61,6 @@ export function ProjectsView({ initialProjects }: ProjectsViewProps) {
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
-
     try {
       await deleteProjectAction(id);
       setProjects((prev) => prev.filter((p) => p.id !== id));
@@ -280,7 +280,7 @@ export function ProjectsView({ initialProjects }: ProjectsViewProps) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDelete(project.id, project.title)}
+                        onClick={() => setDeletingProject({ id: project.id, title: project.title })}
                         className="p-1.5 text-zinc-400 hover:text-red-500 transition-colors"
                         title="Delete project"
                       >
@@ -502,6 +502,22 @@ export function ProjectsView({ initialProjects }: ProjectsViewProps) {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal replacing window.confirm */}
+      <ConfirmationModal
+        isOpen={Boolean(deletingProject)}
+        onClose={() => setDeletingProject(null)}
+        onConfirm={async () => {
+          if (deletingProject) {
+            await handleDelete(deletingProject.id, deletingProject.title);
+            setDeletingProject(null);
+          }
+        }}
+        title="Delete Project?"
+        description={`Are you sure you want to permanently delete "${deletingProject?.title}"? All case study data and assets will be removed.`}
+        confirmLabel="Delete Project"
+        variant="danger"
+      />
     </div>
   );
 }
