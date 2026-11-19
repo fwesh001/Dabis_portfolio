@@ -18,7 +18,9 @@ import {
   deleteServiceAction,
   reorderServiceAction,
 } from '@/lib/actions/admin-actions';
-import { SERVICE_ICON_OPTIONS, renderServiceIcon } from '@/lib/service-icons';
+import { renderServiceIcon } from '@/lib/service-icons';
+import { IconPicker } from '@/components/admin/icon-picker';
+import { ConfirmationModal } from '@/components/ui/confirmation-modal';
 import type { Service } from '@/lib/types';
 
 interface ServicesViewProps {
@@ -30,6 +32,7 @@ export function ServicesView({ initialServices }: ServicesViewProps) {
   const [editingService, setEditingService] = useState<Partial<Service> | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [deletingService, setDeletingService] = useState<{ id: string; title: string } | null>(null);
 
   const handleCreateNew = () => {
     setEditingService({
@@ -47,8 +50,6 @@ export function ServicesView({ initialServices }: ServicesViewProps) {
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete service "${title}"?`)) return;
-
     try {
       await deleteServiceAction(id);
       setServices((prev) => prev.filter((s) => s.id !== id));
@@ -211,8 +212,8 @@ export function ServicesView({ initialServices }: ServicesViewProps) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(service.id, service.title)}
-                    className="p-1.5 text-zinc-400 hover:text-red-500"
+                    onClick={() => setDeletingService({ id: service.id, title: service.title })}
+                    className="p-1.5 text-zinc-400 hover:text-red-500 transition-colors"
                     title="Delete service"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -276,36 +277,13 @@ export function ServicesView({ initialServices }: ServicesViewProps) {
                   />
                 </div>
 
-                {/* Icon Picker Grid */}
-                <div className="space-y-2">
-                  <label className="text-zinc-600 dark:text-zinc-400 flex items-center justify-between">
-                    <span>Select Icon</span>
-                    <span className="text-[10px] text-[var(--accent)] font-semibold">
-                      {editingService.icon || 'Globe'}
-                    </span>
-                  </label>
-                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                    {SERVICE_ICON_OPTIONS.map(({ name, label, Icon }) => {
-                      const isSelected = (editingService.icon || 'Globe') === name;
-                      return (
-                        <button
-                          key={name}
-                          type="button"
-                          onClick={() => setEditingService((prev) => ({ ...prev, icon: name }))}
-                          title={label}
-                          className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${
-                            isSelected
-                              ? 'border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent)] ring-1 ring-[var(--accent)]'
-                              : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400'
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                          <span className="text-[9px] truncate max-w-full">{label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                {/* Reusable Icon Picker Tray Component */}
+                <IconPicker
+                  label="Service Icon"
+                  value={editingService.icon || 'Globe'}
+                  onChange={(name) => setEditingService((prev) => ({ ...prev, icon: name }))}
+                  defaultIcon="Globe"
+                />
 
                 <div className="space-y-1.5">
                   <label className="text-zinc-600 dark:text-zinc-400 flex items-center justify-between">
@@ -354,6 +332,22 @@ export function ServicesView({ initialServices }: ServicesViewProps) {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal replacing window.confirm */}
+      <ConfirmationModal
+        isOpen={Boolean(deletingService)}
+        onClose={() => setDeletingService(null)}
+        onConfirm={async () => {
+          if (deletingService) {
+            await handleDelete(deletingService.id, deletingService.title);
+            setDeletingService(null);
+          }
+        }}
+        title="Delete Service?"
+        description={`Are you sure you want to permanently delete service "${deletingService?.title}"? It will be removed from your public "What I Offer" section.`}
+        confirmLabel="Delete Service"
+        variant="danger"
+      />
     </div>
   );
 }
