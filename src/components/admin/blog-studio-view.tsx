@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { saveBlogPostAction, deleteBlogPostAction } from '@/lib/actions/admin-actions';
 import { MarkdownRenderer } from '@/components/blog/markdown-renderer';
 import { ExpandableImage } from '@/components/ui/image-lightbox';
+import { ConfirmationModal } from '@/components/ui/confirmation-modal';
 import { ImageUploader } from './image-uploader';
 import type { BlogPost } from '@/lib/types';
 
@@ -39,6 +40,7 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
   const [activeMobileTab, setActiveMobileTab] = useState<'write' | 'preview' | 'settings'>('write');
   const [showDesktopMeta, setShowDesktopMeta] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const currentPost = useMemo<BlogPost>(() => {
@@ -156,13 +158,16 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!formPost.id) {
       handleCreateNew();
       return;
     }
+    setIsDeleteDialogOpen(true);
+  };
 
-    if (!confirm(`Permanently delete article "${formPost.title}"?`)) return;
+  const executeDelete = async () => {
+    if (!formPost.id) return;
 
     try {
       await deleteBlogPostAction(formPost.id);
@@ -177,6 +182,8 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
       }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to delete post');
+    } finally {
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -607,6 +614,17 @@ export function BlogStudioView({ initialPosts }: BlogStudioViewProps) {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal replacing window.confirm */}
+      <ConfirmationModal
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={executeDelete}
+        title="Delete Article?"
+        description={`Are you sure you want to permanently delete "${formPost.title}"? This post will be un-published and erased from Supabase.`}
+        confirmLabel="Delete Article"
+        variant="danger"
+      />
     </div>
   );
 }
