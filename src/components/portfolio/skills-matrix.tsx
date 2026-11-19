@@ -4,6 +4,7 @@ import React from 'react';
 import { Code, Database, Cloud, Layers } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
+import { renderServiceIcon } from '@/lib/service-icons';
 import type { SkillGroup } from '@/lib/types';
 
 interface SkillsMatrixProps {
@@ -27,14 +28,18 @@ export function SkillsMatrix({ skillGroups }: SkillsMatrixProps) {
         </div>
       </ScrollReveal>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {skillGroups.map((group, idx) => {
-          const Icon = getIconForCategory(group.category);
+          const FallbackIcon = getIconForCategory(group.category);
           return (
             <ScrollReveal key={group.id} variant="fade-up" delay={idx * 80} className="h-full">
               <div className="h-full p-5 rounded-3xl bg-white/80 dark:bg-zinc-900/60 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 space-y-3 hover:border-[var(--accent)]/60 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
                 <div className="text-xs font-mono font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
-                  <Icon className="w-4 h-4 text-[var(--accent)]" />
+                  {group.icon ? (
+                    renderServiceIcon(group.icon, 'w-4 h-4 text-[var(--accent)] flex-shrink-0')
+                  ) : (
+                    <FallbackIcon className="w-4 h-4 text-[var(--accent)] flex-shrink-0" />
+                  )}
                   <span>{group.category}</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5 text-[11px] font-mono">
