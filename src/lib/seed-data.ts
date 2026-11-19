@@ -293,27 +293,38 @@ export const seedExperiences: Experience[] = [
 export const seedSkillGroups: SkillGroup[] = [
   {
     id: 'c1a2c3d4-0001-4000-8000-000000000001',
-    category: 'Languages',
-    skills: ['Go', 'TypeScript', 'Python', 'SQL', 'Rust (Basic)'],
+    category: 'Full-Stack Web',
+    icon: 'Globe',
+    skills: ['Next.js (App Router)', 'React', 'TypeScript', 'Tailwind CSS'],
     display_order: 1,
   },
   {
     id: 'c1a2c3d4-0002-4000-8000-000000000002',
-    category: 'Distributed Systems',
-    skills: ['PostgreSQL', 'Redis', 'Apache Kafka', 'gRPC', 'Raft'],
+    category: 'Mobile Development',
+    icon: 'Smartphone',
+    skills: ['Flutter (Dart)', 'Kotlin (Jetpack Compose)', 'Android SDK'],
     display_order: 2,
   },
   {
     id: 'c1a2c3d4-0003-4000-8000-000000000003',
-    category: 'Cloud & DevOps',
-    skills: ['Docker', 'Kubernetes', 'AWS (ECS, S3)', 'Terraform', 'GitHub Actions'],
+    category: 'Backend & APIs',
+    icon: 'Server',
+    skills: ['Django', 'Django REST Framework (DRF)', 'Python', 'PostgreSQL', 'RESTful APIs'],
     display_order: 3,
   },
   {
     id: 'c1a2c3d4-0004-4000-8000-000000000004',
-    category: 'Web & Frontend',
-    skills: ['Next.js 15', 'React', 'Tailwind CSS', 'Supabase', 'Server Actions'],
+    category: 'IoT & Embedded',
+    icon: 'Cpu',
+    skills: ['Arduino IDE', 'ESP8266 / ESP32', 'C/C++', 'MQTT', 'HTTP REST', 'WebSockets', 'Sensors & Actuators'],
     display_order: 4,
+  },
+  {
+    id: 'c1a2c3d4-0005-4000-8000-000000000005',
+    category: 'DevOps & Tools',
+    icon: 'Terminal',
+    skills: ['Git/GitHub', 'Docker', 'JWT Authentication', 'Clean Architecture'],
+    display_order: 5,
   },
 ];
 
