@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { saveExperienceAction, deleteExperienceAction } from '@/lib/actions/admin-actions';
+import { ConfirmationModal } from '@/components/ui/confirmation-modal';
 import type { Experience } from '@/lib/types';
 
 interface ExperienceViewProps {
@@ -28,6 +29,7 @@ export function ExperienceView({ initialExperiences }: ExperienceViewProps) {
   const [editingExp, setEditingExp] = useState<Partial<Experience> | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [deletingExp, setDeletingExp] = useState<{ id: string; label: string } | null>(null);
 
   const handleCreateNew = () => {
     setEditingExp({
@@ -50,8 +52,6 @@ export function ExperienceView({ initialExperiences }: ExperienceViewProps) {
   };
 
   const handleDelete = async (id: string, role: string, company: string) => {
-    if (!confirm(`Delete experience record: "${role} at ${company}"?`)) return;
-
     try {
       await deleteExperienceAction(id);
       setExperiences((prev) => prev.filter((e) => e.id !== id));
@@ -216,8 +216,8 @@ export function ExperienceView({ initialExperiences }: ExperienceViewProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleDelete(exp.id, exp.role, exp.company)}
-                  className="p-1.5 text-zinc-400 hover:text-red-500"
+                  onClick={() => setDeletingExp({ id: exp.id, label: `${exp.role} at ${exp.company}` })}
+                  className="p-1.5 text-zinc-400 hover:text-red-500 transition-colors"
                   title="Delete"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -384,6 +384,24 @@ export function ExperienceView({ initialExperiences }: ExperienceViewProps) {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal replacing window.confirm */}
+      <ConfirmationModal
+        isOpen={Boolean(deletingExp)}
+        onClose={() => setDeletingExp(null)}
+        onConfirm={async () => {
+          if (deletingExp) {
+            await deleteExperienceAction(deletingExp.id);
+            setExperiences((prev) => prev.filter((e) => e.id !== deletingExp.id));
+            toast.success(`Removed "${deletingExp.label}"`);
+            setDeletingExp(null);
+          }
+        }}
+        title="Delete Experience Record?"
+        description={`Are you sure you want to delete the record "${deletingExp?.label}"? It will be removed from your public timeline.`}
+        confirmLabel="Delete Record"
+        variant="danger"
+      />
     </div>
   );
 }
